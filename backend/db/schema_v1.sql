@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS case_attorneys (
     firm_state TEXT,
     firm_zip TEXT,
     role_label TEXT,               -- "Of Counsel", "Lead Counsel", "Co-Counsel"
+    speaker_label TEXT,            -- "MR. NUNEZ" / "MS. FLORA" — derived from full_name for Deepgram diarization mapping
     is_lead INTEGER NOT NULL DEFAULT 0 CHECK (is_lead IN (0,1)),
     is_noticing_party INTEGER NOT NULL DEFAULT 0 CHECK (is_noticing_party IN (0,1)),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),

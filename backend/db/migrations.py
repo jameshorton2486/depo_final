@@ -54,6 +54,12 @@ def apply() -> int:
             conn.executescript(sql)
             conn.commit()
 
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(case_attorneys)").fetchall()]
+        if cols and "speaker_label" not in cols:
+            logger.info("Adding missing speaker_label column to case_attorneys")
+            conn.execute("ALTER TABLE case_attorneys ADD COLUMN speaker_label TEXT")
+            conn.commit()
+
         version_after = current_version(conn)
         logger.info(f"DB schema version after apply: {version_after}")
         return version_after

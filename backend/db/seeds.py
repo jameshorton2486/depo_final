@@ -60,7 +60,7 @@ def _new_id() -> str:
     return str(uuid.uuid4())
 
 
-def seed() -> dict[str, int]:
+def seed() -> dict[str, dict[str, int]]:
     """Insert seed rows. Returns counts of new and existing rows by table."""
     conn = _connect()
     try:
