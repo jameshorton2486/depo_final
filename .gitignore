@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.Python
+*.egg-info/
+
+# PyCharm / IDE
+.idea/
+.vscode/
+
+# PyWebView
+*.webview
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data
+data/cases/*
+!data/cases/.gitkeep
+
+# Personal scratch files
+MY_CHEATS.txt
