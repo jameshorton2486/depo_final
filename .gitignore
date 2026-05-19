@@ -24,3 +24,6 @@ data/cases/*
 
 # Personal scratch files
 MY_CHEATS.txt
+
+# Claude Code working directory
+.claude/
