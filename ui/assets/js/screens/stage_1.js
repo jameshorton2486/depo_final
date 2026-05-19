@@ -41,12 +41,14 @@
                 }
             }
 
-            // Sync global layouts
+            // Sync legacy global mirrors if present (no-op when those nodes don't exist in current shell)
             if (stateField === 'caption') {
-                document.getElementById('caseCaption').value = val;
+                const mirror = document.getElementById('caseCaption');
+                if (mirror) mirror.value = val;
             }
             if (stateField === 'deponent') {
-                document.getElementById('caseDeponent').value = val;
+                const mirror = document.getElementById('caseDeponent');
+                if (mirror) mirror.value = val;
             }
 
             checkSchemaValidationStatus();
@@ -133,6 +135,37 @@
             }, 1200);
         }
 
+        // Repopulate UFM form inputs from state.caseInfo (e.g. when revisiting Stage 1)
+        function hydrateUFMFormFromState() {
+            const reverseMap = {
+                'ufmCause': 'cause',
+                'ufmStyle': 'caption',
+                'ufmCourt': 'court',
+                'ufmCounty': 'county',
+                'ufmState': 'state',
+                'ufmWitness': 'deponent',
+                'ufmDate': 'date',
+                'ufmStartTime': 'startTime',
+                'ufmEndTime': 'endTime',
+                'ufmAddress': 'address',
+                'ufmCSRName': 'csrName',
+                'ufmCSRLicense': 'csrLicense',
+                'ufmFirmReg': 'firmReg',
+                'ufmCSRCertExp': 'csrCertExp',
+                'ufmCustodialName': 'custodialName',
+                'ufmRequestingParty': 'requestingParty'
+            };
+            for (const [id, stateField] of Object.entries(reverseMap)) {
+                const el = document.getElementById(id);
+                if (!el) continue;
+                const val = state.caseInfo[stateField];
+                if (val) {
+                    el.value = val;
+                    validateUFMField(el, id);
+                }
+            }
+        }
+
         // Render intake seeds
         function renderSpellingDictionarySeeds() {
             const list = document.getElementById('intakeEntitiesList');
@@ -166,37 +199,7 @@
             goToStage(2);
         }
 
-        // Stage Management
-        function goToStage(stageNum) {
-            if (state.caseInfo.certified && stageNum < 5) {
-                showToast("This transcript is CERTIFIED and LOCKED. Request unlock to edit.", "red");
-                return;
-            }
-
-            // Update tab highlights
-            for (let i = 1; i <= 6; i++) {
-                const tab = document.getElementById(`stageTab${i}`);
-                if (!tab) continue;
-                if (i === stageNum) {
-                    tab.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-sm";
-                } else {
-                    tab.className = "px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800";
-                }
-            }
-            state.currentStage = stageNum;
-            loadScreen(stageNum);
-            showToast(`Stage loaded: ${getStageName(stageNum)}`);
-        }
-
-        function getStageName(num) {
-            const names = ["Case Intake", "Transcripts Engine", "Living Transcript Workspace", "Citation Insertion Pages", "Case Certification", "Format Export"];
-            return names[num - 1];
-        }
-
-        // Trigger hidden inputs
-        function triggerFileInput(id) {
-            document.getElementById(id).click();
-        }
+        // goToStage / getStageName / triggerFileInput live in app.js and ui.js (Phase A.2 extraction)
 
         function handleAudioSelect(input) {
             if (input.files && input.files[0]) {
@@ -221,6 +224,7 @@
 window.validateUFMField = validateUFMField;
 window.checkSchemaValidationStatus = checkSchemaValidationStatus;
 window.runAILegalParser = runAILegalParser;
+window.hydrateUFMFormFromState = hydrateUFMFormFromState;
 window.renderSpellingDictionarySeeds = renderSpellingDictionarySeeds;
 window.confirmProceedWithSchemaCheck = confirmProceedWithSchemaCheck;
 window.handleAudioSelect = handleAudioSelect;

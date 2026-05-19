@@ -1,5 +1,14 @@
         function triggerExportAction() {
-            showToast("Compiling margins, headers, exhibit references, and certification seals...", "indigo");
+            const formatSelect = document.getElementById('exportFormatSelect');
+            const format = formatSelect ? formatSelect.value : 'docx';
+            const mimeMap = {
+                docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                pdf: 'application/pdf',
+                txt: 'text/plain',
+                rtf: 'application/rtf'
+            };
+            const mimeType = mimeMap[format] || 'text/plain';
+            showToast(`Compiling .${format} bundle (margins, headers, exhibits, certification seals)...`, "indigo");
 
             setTimeout(() => {
                 showToast("Secure export wrapper compiled successfully!", "emerald");
@@ -25,16 +34,17 @@ PAGE 1
 
                 transcriptPayload += `\n\nDIGITAL SIGNATURE ID SEAL: ${state.caseInfo.signature || "Richard Vance CSR"}\n`;
 
-                const blob = new Blob([transcriptPayload], { type: 'text/plain' });
+                const blob = new Blob([transcriptPayload], { type: mimeType });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "Jenkins_v_Nexus_Certified_Transcript.docx";
+                a.download = `Jenkins_v_Nexus_Certified_Transcript.${format}`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                URL.revokeObjectURL(url);
 
-                showToast("Microsoft Word .DOCX compatible transcript payload downloaded!", "emerald");
+                showToast(`Certified transcript bundle (.${format}) downloaded!`, "emerald");
             }, 2000);
         }
 

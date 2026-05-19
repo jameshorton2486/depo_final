@@ -78,6 +78,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
             try {
                 if (stageNum === 1) {
                     seedRawIntakeNotes();
+                    hydrateUFMFormFromState && hydrateUFMFormFromState();
                     renderSpellingDictionarySeeds && renderSpellingDictionarySeeds();
                     checkSchemaValidationStatus && checkSchemaValidationStatus();
                 } else if (stageNum === 2) {
@@ -90,6 +91,16 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
                     updateStatsBar && updateStatsBar();
                 } else if (stageNum === 4) {
                     renderExhibitsIndex && renderExhibitsIndex();
+                } else if (stageNum === 5) {
+                    // If already certified, show the sealed card instead of the sign form
+                    if (state.caseInfo.certified) {
+                        const pre = document.getElementById('certPreLock');
+                        const post = document.getElementById('certPostLock');
+                        const sigOut = document.getElementById('renderedSignatory');
+                        if (pre) pre.classList.add('hidden');
+                        if (post) post.classList.remove('hidden');
+                        if (sigOut && state.caseInfo.signature) sigOut.innerText = state.caseInfo.signature;
+                    }
                 }
             } catch (err) {
                 console.warn(`Render error for stage ${stageNum}:`, err);

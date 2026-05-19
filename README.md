@@ -40,9 +40,11 @@ A native desktop window opens displaying the workspace. Right-click -> Inspect f
 ## Phase Status
 
 - Phase A.0: Project scaffold, desktop shell launches ✓
-- Phase A.1: Screen decomposition + router (pending)
-- Phase A.2: Extract shared CSS/JS (pending)
-- Phase A.3: Per-screen polish + schema doc (pending)
-- Phase B: FastAPI backend + SQLite (pending)
-- Phase C: Deepgram, AI cleanup, export (pending)
-- Phase D: Word-timing sync, certification, advanced review (pending)
+- Phase A.1: Screen decomposition + router ✓
+- Phase A.2: Extract shared CSS/JS ✓
+- Phase A.3: Per-screen polish + schema doc ✓ (tag: `phase-a-complete`)
+- Phase B: FastAPI backend + SQLite per `docs/ufm_schema_v1.md` — next up; first cut wires Stage 1 intake to real case/session create endpoints
+- Phase C: Deepgram, AI cleanup, real DOCX/PDF export
+- Phase D: Word-timing sync, cryptographic certification chain, multi-reviewer workflow
+
+See `docs/phase_a_complete.md` for the full done/deferred breakdown.
