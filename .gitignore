@@ -35,3 +35,13 @@ MY_CHEATS.txt
 
 # Logs
 *.log
+
+# Local SQLite database - never commit user data
+data/.sqlite3
+data/.sqlite3-journal
+data/.sqlite3-wal
+data/.sqlite3-shm
+data/depo_pro.sqlite3
+data/depo_pro.sqlite3-journal
+data/depo_pro.sqlite3-wal
+data/depo_pro.sqlite3-shm

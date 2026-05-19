@@ -15,6 +15,8 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from backend import config
+from backend.db import migrations as db_migrations
+from backend.db import seeds as db_seeds
 
 app = FastAPI(
     title="Depo-Pro Backend",
@@ -61,6 +63,28 @@ def health_config() -> JSONResponse:
     )
 
 
+@app.get("/health/db")
+def health_db() -> JSONResponse:
+    """Reports SQLite database health: file exists, schema version, table count."""
+    db_exists = db_migrations.DB_PATH.exists()
+    tables: list[str] = []
+    schema_version: int = 0
+    if db_exists:
+        conn = db_migrations._connect()
+        try:
+            schema_version = db_migrations.current_version(conn)
+            tables = db_migrations.list_tables()
+        finally:
+            conn.close()
+    return JSONResponse({
+        "db_exists": db_exists,
+        "db_path": str(db_migrations.DB_PATH),
+        "schema_version": schema_version,
+        "table_count": len(tables),
+        "tables": tables,
+    })
+
+
 # Static UI mount - must come AFTER all API routes
 # Mounting at "/" so existing frontend fetches like screens/stage_1_intake.html keep working
 app.mount("/", StaticFiles(directory=str(config.UI_ROOT), html=True), name="ui")
@@ -76,6 +100,11 @@ def on_startup() -> None:
         logger.info("Deepgram API key detected in environment.")
     else:
         logger.info("Deepgram API key not set (expected until Phase B.3).")
+
+    final_version = db_migrations.apply()
+    logger.info(f"DB at {db_migrations.DB_PATH} (schema v{final_version})")
+    seed_result = db_seeds.seed()
+    logger.info(f"Seed result: {seed_result}")
 
 
 @app.on_event("shutdown")
