@@ -35,7 +35,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
             if (document.getElementById('exhibitsIndexList')) renderExhibitsIndex();
             if (document.getElementById('flagCount')) updateStatsBar();
             if (document.getElementById('sequentialQueueList')) renderFileQueue();
-            if (document.getElementById('intakeEntitiesList')) renderSpellingDictionarySeeds();
+            if (document.getElementById('ufmTermsTableBody')) renderUFMTermsTable();
         }
 
 
@@ -50,9 +50,9 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
                 const tab = document.getElementById(`stageTab${i}`);
                 if (!tab) continue;
                 if (i === stageNum) {
-                    tab.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-sm";
+                    tab.className = "px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-sm";
                 } else {
-                    tab.className = "px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800";
+                    tab.className = "px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800";
                 }
             }
             state.currentStage = stageNum;
@@ -79,7 +79,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
                 if (stageNum === 1) {
                     seedRawIntakeNotes();
                     hydrateUFMFormFromState && hydrateUFMFormFromState();
-                    renderSpellingDictionarySeeds && renderSpellingDictionarySeeds();
+                    renderUFMTermsTable && renderUFMTermsTable();
                     checkSchemaValidationStatus && checkSchemaValidationStatus();
                 } else if (stageNum === 2) {
                     renderFileQueue && renderFileQueue();
