@@ -194,943 +194,10 @@
 
     <!-- MAIN INTERACTIVE SPACE -->
     <main class="flex-1 flex overflow-hidden relative font-sans">
-
-        <!-- STAGE 1: CASE INTAKE & UFM SCHEMA VERIFICATION -->
-        <div id="stagePanel1" class="stage-panel flex-1 flex flex-col xl:flex-row p-6 gap-6 overflow-y-auto">
-            <!-- Left Column: Notice Upload and Raw Reporter Intake Notes -->
-            <div class="flex-1 flex flex-col gap-6">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
-                    <div>
-                        <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                            Intake File & Raw Reporter Notes
-                        </h2>
-                        <p class="text-sm text-slate-400 mb-6 leading-relaxed">Paste scheduling details, attorney emails, or Notice of Deposition (NOD) notes. Our engine programmatically parses these spelling lists and case files to populate the mandatory Texas UFM schema.</p>
-
-                        <!-- Real Notes / Spelling Input Field Area -->
-                        <div class="mb-4">
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center justify-between">
-                                <span>Spelled-Out Notes, Scheduling Emails & Terminology list</span>
-                                <span class="text-[10px] text-indigo-400 font-mono">Input Workspace</span>
-                            </label>
-                            <textarea id="rawIntakeNotes" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 font-mono focus:outline-none focus:border-indigo-500 h-44 leading-relaxed" placeholder="Type or paste deposition schedules or word lists here..."></textarea>
-                        </div>
-
-                        <!-- Dropzones -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div class="border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-xl p-4 text-center bg-slate-950/40 transition-all cursor-pointer" onclick="triggerFileInput('audioInput')">
-                                <input id="audioInput" type="file" class="hidden" accept="audio/*,video/*" onchange="handleAudioSelect(this)">
-                                <div class="flex justify-center mb-1">
-                                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-                                </div>
-                                <p class="text-xs font-semibold text-white" id="audioLabel">Link Deposition Audio File</p>
-                            </div>
-
-                            <div class="border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-xl p-4 text-center bg-slate-950/40 transition-all cursor-pointer" onclick="triggerFileInput('nodInput')">
-                                <input id="nodInput" type="file" class="hidden" accept=".pdf,.doc,.docx,.txt" onchange="simulateNODParsing(this)">
-                                <div class="flex justify-center mb-1">
-                                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                </div>
-                                <p class="text-xs font-semibold text-white" id="nodLabel">Browse Scheduling File (NOD)</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3">
-                            <button onclick="runAILegalParser()" class="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5">
-                                ⚡ Run AI Notes Parser
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live extract terms sidecar dictionary preview -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-                        Acoustic Spelling Alignment Seeds
-                    </h3>
-                    <div class="space-y-3 max-h-32 overflow-y-auto pr-1" id="intakeEntitiesList">
-                        <!-- Extractions loaded dynamically from state -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Verification Board & Mandatory Texas UFM Form Fields -->
-            <div class="w-full xl:w-[500px] bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl shrink-0">
-                <div class="flex-1 flex flex-col overflow-hidden">
-                    <div class="border-b border-slate-800 pb-3 mb-4 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                UFM Schema Verification Board
-                            </h3>
-                            <p class="text-[11px] text-slate-500">Cross-examine extracted values before proceeding</p>
-                        </div>
-                        <span id="validationSummaryBadge" class="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold">⚠️ SCHEMA INCOMPLETE</span>
-                    </div>
-
-                    <!-- Scrollable Form Blocks containing Texas UFM standards -->
-                    <div class="flex-1 overflow-y-auto pr-2 space-y-5" id="ufmVerificationForm">
-
-                        <!-- BLOCK 1: CASE & COURT PARAMETERS -->
-                        <div class="space-y-3 p-3 bg-slate-950/40 rounded-xl border border-slate-850">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block border-b border-slate-900 pb-1">Block 1: Case & Court Parameters</span>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Cause Number</label>
-                                    <input id="ufmCause" type="text" oninput="validateUFMField(this, 'Cause No.')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Court / Judicial District</label>
-                                    <input id="ufmCourt" type="text" oninput="validateUFMField(this, 'Court')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">County of Venue</label>
-                                    <input id="ufmCounty" type="text" oninput="validateUFMField(this, 'County')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">State</label>
-                                    <input id="ufmState" type="text" value="Texas" oninput="validateUFMField(this, 'State')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-
-                            <div class="relative">
-                                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Full Caption / Style</label>
-                                <textarea id="ufmStyle" oninput="validateUFMField(this, 'Style')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none h-12 leading-normal" placeholder="SARAH JENKINS vs. NEXUS PHARMA INC."></textarea>
-                                <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                            </div>
-                        </div>
-
-                        <!-- BLOCK 2: WITNESS & LOGISTICS -->
-                        <div class="space-y-3 p-3 bg-slate-950/40 rounded-xl border border-slate-850">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block border-b border-slate-900 pb-1">Block 2: Witness & Logistics</span>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Deponent / Witness Name</label>
-                                    <input id="ufmWitness" type="text" oninput="validateUFMField(this, 'Witness')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Deposition Date</label>
-                                    <input id="ufmDate" type="text" placeholder="YYYY-MM-DD" oninput="validateUFMField(this, 'Date')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Start Time (AM/PM)</label>
-                                    <input id="ufmStartTime" type="text" oninput="validateUFMField(this, 'Start Time')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">End Time (AM/PM)</label>
-                                    <input id="ufmEndTime" type="text" oninput="validateUFMField(this, 'End Time')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-
-                            <div class="relative">
-                                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Physical / Virtual Deposition Address</label>
-                                <input id="ufmAddress" type="text" oninput="validateUFMField(this, 'Address')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                            </div>
-                        </div>
-
-                        <!-- BLOCK 3: COURT REPORTER (CSR) CREDENTIALS -->
-                        <div class="space-y-3 p-3 bg-slate-950/40 rounded-xl border border-slate-850">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block border-b border-slate-900 pb-1">Block 3: Court Reporter (CSR) Credentials</span>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">CSR Officer Name</label>
-                                    <input id="ufmCSRName" type="text" oninput="validateUFMField(this, 'CSR Name')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">CSR License Number</label>
-                                    <input id="ufmCSRLicense" type="text" oninput="validateUFMField(this, 'License No.')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Firm Registration Number</label>
-                                    <input id="ufmFirmReg" type="text" oninput="validateUFMField(this, 'Firm Reg.')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">CSR License Expiration</label>
-                                    <input id="ufmCSRCertExp" type="text" placeholder="YYYY-MM-DD" oninput="validateUFMField(this, 'CSR Exp')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white font-mono focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- BLOCK 4: CUSTODIAL ATTORNEY DETAILS -->
-                        <div class="space-y-3 p-3 bg-slate-950/40 rounded-xl border border-slate-850">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block border-b border-slate-900 pb-1">Block 4: Custodial Attorney Details</span>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Custodial Attorney Name</label>
-                                    <input id="ufmCustodialName" type="text" oninput="validateUFMField(this, 'Custodial Name')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                                <div class="relative">
-                                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Requesting Firm / Party</label>
-                                    <input id="ufmRequestingParty" type="text" oninput="validateUFMField(this, 'Requesting Firm')" class="w-full bg-slate-900 border border-red-500/30 text-xs px-2.5 py-1.5 rounded-lg text-white focus:outline-none">
-                                    <span class="ufm-val-badge absolute right-2 top-6 text-[8px] px-1 py-0.2 rounded bg-red-500/10 text-red-400">MISSING</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Footer proceed action with alert checks -->
-                <div class="p-4 border-t border-slate-800 flex justify-end shrink-0">
-                    <button id="btnProceedToStage2" onclick="confirmProceedWithSchemaCheck()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
-                        Proceed to Transcripts Engine
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- STAGE 2: TRANSCRIPTS (LIVE STREAMING & PRE-RECORDED MULTI-FILE QUEUE DRIVER) -->
-        <div id="stagePanel2" class="stage-panel flex-1 flex flex-col xl:flex-row p-6 gap-6 overflow-y-auto hidden">
-            <!-- Left Side: Double Ingestion Workspace (Live and Pre-recorded Panels side by side/stacked) -->
-            <div class="flex-1 flex flex-col gap-6">
-
-                <!-- SECTION A: LIVE TRANSCRIPT USING ZOOM -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                            <h3 class="text-md font-bold text-white flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
-                                Live Transcript Using Zoom
-                            </h3>
-                            <span class="text-xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-mono">Deepgram Realtime Stream</span>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Zoom Meeting ID</label>
-                                <input id="zoomMeetingId" type="text" value="847-9201-3855" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-red-500 font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Zoom Passcode</label>
-                                <input id="zoomPasscode" type="password" value="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-red-500 font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Hardware Capture Input</label>
-                                <select id="audioDeviceSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-red-500 font-sans">
-                                    <option>Internal Audio Driver (Default)</option>
-                                    <option>External Stenomask USB Feed</option>
-                                    <option>Virtual Zoom Audio Bridge</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signal Diagnostics</label>
-                                <button onclick="testGainAndAudio()" class="w-full bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg px-2 py-1.5 text-[11px] text-indigo-400 font-semibold transition-all">
-                                    Test Input Level
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Real-time Input Signal db level meter -->
-                        <div id="liveGainContainer" class="mb-4 bg-slate-950 px-4 py-2.5 rounded-lg border border-slate-850 hidden animate-slide-in">
-                            <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
-                                <span class="flex items-center gap-1"><span id="micDiagnosticLevel" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Signal Status: Locked</span>
-                                <span id="dbValueLabel">-32 dB Gain</span>
-                            </div>
-                            <div class="w-full bg-slate-900 h-2 rounded overflow-hidden flex gap-0.5">
-                                <div id="gainLevelFill" class="bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 h-full w-[45%] transition-all duration-100"></div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-950 p-4 rounded-xl border border-slate-850">
-                            <!-- SVG Waveform -->
-                            <div class="md:col-span-2 flex justify-center">
-                                <div class="w-16 h-16 rounded-full border-2 border-slate-800 flex items-center justify-center bg-slate-900/80 relative overflow-hidden" id="streamingVisualCircle">
-                                    <div id="liveStreamWaveGlow" class="absolute inset-0 bg-red-500/10 blur-sm rounded-full opacity-0"></div>
-                                    <svg id="audioVisualizerSvg" class="w-10 h-10 text-slate-500" viewBox="0 0 100 100">
-                                        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="4" id="visualizerCoreRing"></circle>
-                                        <path d="M50,20 L50,80 M35,30 L35,70 M65,30 L65,70" stroke="currentColor" stroke-width="4" stroke-linecap="round" id="visualizerBars"></path>
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <!-- Actions/Status text -->
-                            <div class="md:col-span-10 text-center md:text-left">
-                                <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
-                                    <span id="zoomStatusHeader" class="text-xs font-bold text-slate-400">Stream Disconnected</span>
-                                    <span id="liveTimestamp" class="text-[10px] font-mono text-slate-500 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800 hidden">00:00:00</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">Runs Deepgram's streaming WebSockets directly inside the deposition room. Streams raw voice text character-by-character to enable instant legal read-backs.</p>
-
-                                <div class="flex gap-2 justify-center md:justify-start">
-                                    <button onclick="startZoomStreaming()" id="btnStartStream" class="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1">
-                                        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>Connect & Stream
-                                    </button>
-                                    <button onclick="stopZoomStreaming()" id="btnStopStream" disabled class="px-3.5 py-1.5 bg-slate-800 text-slate-500 text-xs font-bold rounded-lg transition-all" style="opacity:0.5">Disconnect</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Live Text Viewport -->
-                        <div class="mt-3 bg-slate-950 border border-slate-850 rounded-xl p-3">
-                            <div class="h-28 overflow-y-auto pr-1 font-mono text-xs space-y-1.5 text-slate-400" id="liveStreamTextContainer">
-                                <p class="text-slate-600 italic text-center py-8">WebSocket stream idle. Awaiting connect sequence.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION B: PRE-RECORDED FILE BATCH TRANSCRIBE (Chronological Sequence Queue) -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex-1 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                            <h3 class="text-md font-bold text-white flex items-center gap-2">
-                                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                                Pre-recorded Media File Transcripts
-                            </h3>
-                            <span class="text-xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-mono">Sequential Ingest Queue</span>
-                        </div>
-
-                        <!-- Pre-Ingest Parameters Map -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 bg-slate-950 rounded-xl border border-slate-850">
-                            <div>
-                                <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Deepgram Model</label>
-                                <select id="modelSelect" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[11px] text-white">
-                                    <option value="legal" selected>Nova-3 Legal Pro</option>
-                                    <option value="general">Nova-3 General</option>
-                                    <option value="medical">Nova-3 Medical Specialized</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Expected Speakers</label>
-                                <select id="speakerCount" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[11px] text-white">
-                                    <option value="auto">Auto-Diarize (Default)</option>
-                                    <option value="2">2 Speakers (Single Deponent)</option>
-                                    <option value="3">3 Speakers (Deponent + Counsel)</option>
-                                    <option value="4">4 Speakers (Deponent + Multi-Counsel)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Acoustic Assessment</label>
-                                <div class="text-[10px] text-emerald-400 font-semibold flex items-center h-6 gap-1">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> SNR Check: Good
-                                </div>
-                            </div>
-                        </div>
-
-                        <p class="text-xs text-slate-400 mb-4 leading-relaxed font-sans">
-                            Upload **one or more audio and video files** in chronological order (e.g. morning session, afternoon session, redirect clip). Deepgram's Nova-3 engine will process them sequentially and compile them into a single continuous transcript layer.
-                        </p>
-
-                        <!-- Batch Drop Area -->
-                        <div class="border border-dashed border-slate-800 hover:border-indigo-500/50 rounded-xl p-4 text-center bg-slate-950/40 transition-all cursor-pointer mb-4" onclick="triggerFileInput('batchAudioInputs')">
-                            <input id="batchAudioInputs" type="file" multiple class="hidden" accept="audio/*,video/*" onchange="addFilesToIngestionQueue(this)">
-                            <div class="flex justify-center mb-1">
-                                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            </div>
-                            <span class="text-xs font-semibold text-slate-300">Add Audio/Video Files to Ingestion Sequence</span>
-                        </div>
-
-                        <!-- Sequence Queue List (Enhanced with Move Controls) -->
-                        <div class="space-y-2 max-h-40 overflow-y-auto pr-1 mb-4" id="sequentialQueueList">
-                            <p class="text-xs text-slate-600 italic text-center py-4 bg-slate-950/40 rounded-xl border border-slate-850">In-order queue is empty. Drag or browse files above.</p>
-                        </div>
-
-                        <!-- Enhanced Double-Action Progress Diagnostic Center -->
-                        <div class="bg-slate-950 rounded-xl p-4 border border-slate-850 mb-3 hidden" id="sequentialProgressBar">
-                            <div class="flex items-center justify-between text-[11px] font-mono text-slate-300 mb-2">
-                                <span id="queueProgressLabel" class="font-bold">Ingesting File 1 of 2...</span>
-                                <span id="queueProgressPercent" class="text-indigo-400 font-bold">0%</span>
-                            </div>
-                            <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden mb-3 border border-slate-800">
-                                <div id="queueProgressFill" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 h-full w-0 transition-all duration-200"></div>
-                            </div>
-                            <!-- Queue Metrics Grid (Estimated remaining time visualizer) -->
-                            <div class="grid grid-cols-3 gap-2 text-[10px] font-mono text-slate-500 pt-2 border-t border-slate-900">
-                                <div>
-                                    <span class="block text-slate-600">TIME ELAPSED</span>
-                                    <span id="statTimeElapsed" class="text-slate-300">0.0s</span>
-                                </div>
-                                <div class="text-center">
-                                    <span class="block text-slate-600">TIME REMAINING (EST)</span>
-                                    <span id="statTimeRemaining" class="text-emerald-400 font-bold">Calculating...</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="block text-slate-600">REAL-TIME SPEED</span>
-                                    <span id="statSpeedRatio" class="text-indigo-400">8.4x Real-Time</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sequential Progressive Log Console -->
-                        <div class="bg-slate-950 border border-slate-850 rounded-xl p-3 text-left font-mono text-[10px] text-slate-500 space-y-1 max-h-24 overflow-y-auto hidden" id="sequentialLogs">
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
-                        <button onclick="clearAllQueues()" class="text-xs text-red-500 hover:text-red-400 font-semibold transition-all">Reset Files Queue</button>
-                        <button onclick="startSequentialIngestion()" id="btnIngestQueue" disabled class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl text-xs font-bold transition-all shadow-md">
-                            Process Sequence Queue in Order
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Footer Nav Controls -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex justify-between items-center shrink-0">
-                    <button onclick="goToStage(1)" class="text-slate-400 hover:text-white text-xs font-semibold font-mono">◀ Stage 1: Case Intake</button>
-                    <button onclick="goToStage(3)" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-1">
-                        Proceed to Transcript Workspace
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right Side: Live Read-Back Terminal Sidecar Console (Dynamic context finder) -->
-            <div class="w-full xl:w-96 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl shrink-0">
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-2 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
-                        Live Read-Back Terminal
-                    </h3>
-                    <p class="text-xs text-slate-400 mb-4 leading-relaxed font-sans">Attorneys frequently ask for "read-backs" of testimony during proceedings. Use this terminal search to scan either the live stream or completed blocks instantly.</p>
-
-                    <div class="space-y-4 font-sans">
-                        <div>
-                            <div class="relative">
-                                <input id="readBackSearch" oninput="executeReadbackSearch(this.value)" type="text" placeholder="Search string patterns..." class="w-full bg-slate-950 border border-slate-850 rounded-lg pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-red-500 font-mono">
-                                <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            </div>
-                        </div>
-
-                        <!-- Read-Back Search Results List -->
-                        <div class="bg-slate-950 border border-slate-850 rounded-xl p-3 h-[380px] overflow-y-auto space-y-3 font-sans" id="readBackResultsContainer">
-                            <p class="text-[10px] text-slate-500 text-center py-24 italic font-sans">No queries tracked yet. Search above to check historical arrays.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80 mt-6">
-                    <p class="text-xs text-slate-400 italic font-sans">"Matches highlight timestamps and direct lines for legal verification."</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- STAGE 3: TRANSCRIPT WORKSPACE (THE INTEGRATED WORKHORSE WITH MULTI-STAGE PIPELINE) -->
-        <div id="stagePanel3" class="stage-panel flex-1 flex overflow-hidden hidden">
-
-            <!-- LEFT SIDEBAR: Context Navigation, Pipeline Rules, & learned memory -->
-            <aside class="w-80 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 overflow-hidden">
-                <div class="flex-1 flex flex-col overflow-hidden">
-                    <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Context & Pipeline Sandbox</span>
-                        <span id="flagCount" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">3 pending flags</span>
-                    </div>
-
-                    <!-- Sidebar content panel -->
-                    <div class="flex-1 overflow-y-auto p-4 space-y-5">
-
-                        <!-- Programmatic & AI Processing Pipeline Sandbox -->
-                        <div class="bg-slate-950 rounded-xl p-3.5 border border-slate-850 space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Preprocessing Pipeline</span>
-                                <span class="text-[9px] text-slate-500 font-mono">Sandbox</span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 leading-relaxed font-sans">Run programmatic python-style rules (RegEx transformations) and Visual Basic macros on raw speech before deploying AI assist.</p>
-
-                            <!-- Custom Regex Rules Builder -->
-                            <div class="space-y-2">
-                                <div>
-                                    <label class="block text-[9px] uppercase tracking-wider text-slate-500 mb-1">Step 1: Code Pattern (RegEx Find)</label>
-                                    <input id="regexFindInput" type="text" value="\btrinaty\b" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs text-white font-mono">
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] uppercase tracking-wider text-slate-500 mb-1">Step 2: Replace String (Python Rule)</label>
-                                    <input id="regexReplaceInput" type="text" value="Trinity" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs text-white font-mono">
-                                </div>
-                                <button onclick="runCustomRegexRulePipeline()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded transition-all">
-                                    Execute Python Rules Engine
-                                </button>
-                            </div>
-
-                            <!-- AI Layer Configuration -->
-                            <div class="pt-3 border-t border-slate-850 space-y-2 font-sans">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Step 3: AI Suggestions Pass</span>
-                                <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                                    <span>AI Temperature</span>
-                                    <span id="sliderVal">Strict (0.2)</span>
-                                </div>
-                                <input type="range" min="1" max="3" value="1" oninput="updateTemperatureSlider(this.value)" class="w-full accent-indigo-500 bg-slate-900 rounded-lg appearance-none h-1 cursor-pointer">
-                                <button onclick="triggerAISuggestionExtraction()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold rounded transition-all">
-                                    Extract Deepgram Suggestions
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Speakers Management list -->
-                        <div class="font-sans">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-2">Speakers & Roles</span>
-                            <div class="space-y-1.5" id="speakersList">
-                                <!-- Filled by JS state -->
-                            </div>
-                        </div>
-
-                        <!-- Correction Memory: Real-time learned values -->
-                        <div class="font-sans">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Correction Memory</span>
-                                <span class="text-[9px] text-cyan-400 bg-cyan-500/10 px-1 py-0.2 rounded font-semibold font-mono">Auto-Learn</span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">Explicitly captured corrections that align automatically across cases.</p>
-                            <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 max-h-48 overflow-y-auto space-y-2" id="correctionsMemoryContainer">
-                                <!-- Loaded from JS -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer details -->
-                <div class="p-4 border-t border-slate-800 bg-slate-950/60 text-[10px] text-slate-500 font-mono leading-relaxed select-none">
-                    AI assists spelling alignments & structure. Absolute authority rests entirely with the signatory reporter.
-                </div>
-            </aside>
-
-            <!-- CENTER PANEL: Single, Living Transcript Canvas -->
-            <section class="flex-1 flex flex-col bg-slate-950 overflow-hidden relative">
-
-                <!-- Workspace Mode Selector & MS Word Toggle -->
-                <div class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between z-10 shrink-0 flex-wrap gap-3">
-                    <div class="flex items-center gap-1.5 overflow-x-auto select-none">
-                        <button onclick="setWorkspaceMode('edit')" id="modeBtnEdit" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all border border-slate-700 bg-slate-800 text-white">
-                            🖋️ Free Edit Mode
-                        </button>
-                        <button onclick="setWorkspaceMode('suggestions')" id="modeBtnSuggestions" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all border border-transparent text-slate-400 hover:text-slate-200">
-                            ✨ Suggestion Sweep
-                        </button>
-                        <button onclick="setWorkspaceMode('audio')" id="modeBtnAudio" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all border border-transparent text-slate-400 hover:text-slate-200">
-                            🎧 Audio Sync Review
-                        </button>
-                        <button onclick="setWorkspaceMode('formatting')" id="modeBtnFormatting" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all border border-transparent text-slate-400 hover:text-slate-200 font-mono">
-                            ¶ UFM Layout
-                        </button>
-                    </div>
-
-                    <!-- Canvas Theme Toggle (Word Doc View vs Dark View) -->
-                    <div class="flex items-center gap-2 select-none">
-                        <button onclick="toggleTranscriptTheme()" class="px-3.5 py-1.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-all flex items-center gap-1.5" id="btnThemeToggle">
-                            📁 Toggle MS Word Layout
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Dynamic Workspace Instructions banner -->
-                <div id="modeBanner" class="bg-indigo-600/10 border-b border-indigo-500/20 px-6 py-2 flex items-center justify-between text-xs text-indigo-300 select-none">
-                    <div class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                        <span id="modeBannerText">Free Edit Mode: Click any line and type to edit text directly. Left rail tags are preserved automatically.</span>
-                    </div>
-                    <span class="font-mono text-[10px] text-indigo-400 uppercase">Texas UFM Compliant Layout Engine Active</span>
-                </div>
-
-                <!-- THE REAL LIVE UFM LEGAL TRANSCRIPT CANVAS -->
-                <div class="flex-1 overflow-y-auto px-12 py-8 bg-[#131924] flex justify-center relative select-text" id="transcriptCanvas">
-                    <!-- Dynamic class configuration: either dark mock or ms-word-page layout -->
-                    <div id="compiledUFMTranscriptContainer" class="w-full max-w-3xl bg-[#0a0f18] text-slate-300 border border-slate-800/80 shadow-2xl rounded-xl p-8 font-mono text-sm leading-8 relative min-h-[1000px] select-text">
-                        <!-- Custom Margin line rules generated inside code -->
-                        <div class="absolute top-0 bottom-0 left-12 ufm-rule-left pointer-events-none" id="lineRuleLeft"></div>
-                        <div class="absolute top-0 bottom-0 right-12 ufm-rule-right pointer-events-none" id="lineRuleRight"></div>
-
-                        <div id="transcriptLinesContainer" class="relative z-10 select-text">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Persistent Live Footer Banner of the Workspace -->
-                <footer class="bg-slate-900 border-t border-slate-800 px-6 py-3 flex items-center justify-between text-xs text-slate-400 font-mono shrink-0 select-none">
-                    <div class="flex items-center gap-4">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-500"></span>RAW IS IMMUTABLE</span>
-                        <span class="text-slate-700">|</span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-indigo-500"></span>WORKING LAYER PERSISTENT</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-[11px]">
-                        <span>Pagination:</span>
-                        <span id="livePaginationStats" class="font-bold text-white bg-slate-950 px-2 py-0.5 rounded border border-slate-800">1 Page Total</span>
-                    </div>
-                </footer>
-            </section>
-
-            <!-- RIGHT SIDEBAR: Waveforms, Suggestions, & Detailed Provenance Timeline -->
-            <aside class="w-80 bg-slate-900 border-l border-slate-800 flex flex-col justify-between shrink-0 overflow-hidden">
-                <div class="flex-1 flex flex-col overflow-hidden">
-
-                    <!-- Top Section: Mode Context Banner -->
-                    <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase tracking-wider text-cyan-400" id="rightPanelTitle">Audio & Context Wave</span>
-                        <span class="text-[10px] font-mono text-slate-500" id="cursorLineTracker">LINE 1</span>
-                    </div>
-
-                    <!-- Scrollable tools sidebar -->
-                    <div class="flex-1 overflow-y-auto p-4 space-y-6">
-
-                        <!-- TOOL COMPONENT: Waveform Playback Controls (Audio sync) -->
-                        <div id="toolSectionAudio" class="space-y-4">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Synchronized Playhead</span>
-                            <div class="bg-slate-950 rounded-xl p-3.5 border border-slate-805">
-
-                                <!-- Waveform Visualization -->
-                                <div class="h-16 w-full relative overflow-hidden bg-slate-950 border border-slate-900 rounded-lg flex items-center justify-between mb-3">
-                                    <svg id="audioWaveformVisual" class="w-full h-full text-slate-700" viewBox="0 0 300 60" preserveAspectRatio="none">
-                                        <g fill="currentColor" opacity="0.4" id="waveGroup">
-                                            <!-- SVG bar charts populated on setup -->
-                                            <rect x="10" y="25" width="2" height="10" rx="1"/>
-                                            <rect x="25" y="10" width="2" height="40" rx="1"/>
-                                            <rect x="40" y="20" width="2" height="20" rx="1"/>
-                                            <rect x="55" y="2" width="2" height="56" rx="1"/>
-                                            <rect x="70" y="18" width="2" height="24" rx="1"/>
-                                            <rect x="85" y="25" width="2" height="10" rx="1"/>
-                                            <rect x="100" y="10" width="2" height="40" rx="1"/>
-                                            <rect x="115" y="20" width="2" height="20" rx="1"/>
-                                            <rect x="130" y="2" width="2" height="56" rx="1"/>
-                                            <rect x="145" y="18" width="2" height="24" rx="1"/>
-                                            <rect x="160" y="25" width="2" height="10" rx="1"/>
-                                            <rect x="175" y="10" width="2" height="40" rx="1"/>
-                                            <rect x="190" y="20" width="2" height="20" rx="1"/>
-                                            <rect x="205" y="8" width="2" height="44" rx="1"/>
-                                            <rect x="220" y="22" width="2" height="16" rx="1"/>
-                                            <rect x="235" y="5" width="2" height="50" rx="1"/>
-                                            <rect x="250" y="25" width="2" height="10" rx="1"/>
-                                            <rect x="265" y="15" width="2" height="30" rx="1"/>
-                                            <rect x="280" y="20" width="2" height="20" rx="1"/>
-                                        </g>
-                                    </svg>
-                                    <div id="playheadIndicator" class="absolute top-0 bottom-0 w-0.5 bg-indigo-500 left-[20%] transition-all duration-200 shadow-md"></div>
-                                </div>
-
-                                <div class="flex items-center justify-between">
-                                    <span id="audioTimeLabel" class="text-xs font-mono text-slate-400">00:04.2 / 02:45.0</span>
-                                    <span id="confidenceScoreLabel" class="text-[10px] font-semibold font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">97% Conf</span>
-                                </div>
-
-                                <!-- Playback Controls -->
-                                <div class="flex items-center justify-center gap-3 mt-4 select-none">
-                                    <button onclick="skipAudio(-5)" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-all border border-transparent hover:border-slate-700" title="Skip back 5s">
-                                        ◀ 5s
-                                    </button>
-                                    <button onclick="toggleAudioPlayback()" id="playAudioBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold p-3 rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="playIconSvg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    </button>
-                                    <button onclick="skipAudio(5)" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-all border border-transparent hover:border-slate-700" title="Skip forward 5s">
-                                        5s ▶
-                                    </button>
-                                </div>
-
-                                <div class="mt-4 pt-4 border-t border-slate-900 font-sans">
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Playback Speed</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" id="audioSpeedRange" min="0.5" max="2.0" step="0.1" value="1.0" oninput="changeAudioSpeed(this.value)" class="flex-1 accent-indigo-500 h-1 bg-slate-900 rounded-lg appearance-none cursor-pointer">
-                                        <span id="audioSpeedLabel" class="text-xs font-mono text-indigo-400">1.0x</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Suggestions Drawer Component -->
-                        <div id="toolSectionSuggestions" class="space-y-4 hidden font-sans">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">AI Suggestions Sweep Queue</span>
-                            <div class="space-y-3" id="aiSweepContainer">
-                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                    <p class="text-xs text-slate-400 mb-2">No suggestion selected. Click a highlighted word inside the transcript center or choose the Sweep tab to cycle through edits.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Legal Formatting Utilities -->
-                        <div id="toolSectionFormatting" class="space-y-4 hidden font-sans">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Texas UFM Formatting Utilities</span>
-                            <div class="grid grid-cols-1 gap-2">
-                                <button onclick="applyLinePrefix('Q')" class="bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 px-3 py-2 rounded-lg text-xs font-medium text-left flex items-center justify-between">
-                                    <span>Force Question Style (Q.)</span>
-                                    <span class="text-[10px] font-mono text-slate-500">Alt+Q</span>
-                                </button>
-                                <button onclick="applyLinePrefix('A')" class="bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 px-3 py-2 rounded-lg text-xs font-medium text-left flex items-center justify-between">
-                                    <span>Force Answer Style (A.)</span>
-                                    <span class="text-[10px] font-mono text-slate-500">Alt+A</span>
-                                </button>
-                                <button onclick="forceManualPageBreak()" class="bg-indigo-600/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-600/20 px-3 py-2 rounded-lg text-xs font-semibold text-left flex items-center justify-between">
-                                    <span>Force Pagination Break</span>
-                                    <span class="text-[10px] font-mono text-indigo-400">Page + 1</span>
-                                </button>
-                                <button onclick="removeFillerWordsGlobal()" class="bg-red-950 hover:bg-red-900 text-red-200 border border-red-500/20 px-3 py-2 rounded-lg text-xs font-semibold text-left">
-                                    Strip Acoustic Fillers (um, uh)
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Legal Provenance Timeline -->
-                        <div class="pt-4 border-t border-slate-800 font-sans">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Chain of Custody Provenance</span>
-                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mb-3 leading-relaxed font-sans">Cryptographic tracking of edits to ensure complete judicial confidence in the transcript.</p>
-                            <div class="bg-slate-950 rounded-xl p-3.5 border border-slate-800 space-y-4" id="provenanceLogContainer">
-                                <!-- Dynamically loaded from JS state -->
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Stage navigation from within Workspace sidebar footer -->
-                <div class="p-4 border-t border-slate-800 flex justify-end shrink-0 select-none">
-                    <button onclick="goToStage(4)" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
-                        Proceed to Insertion Pages
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
-            </aside>
-        </div>
-
-        <!-- STAGE 4: INSERTION PAGES (Exhibits, Indices, Citations) -->
-        <div id="stagePanel4" class="stage-panel flex-1 flex flex-col md:flex-row p-6 gap-6 overflow-y-auto hidden">
-            <div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
-                <div>
-                    <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                        Exhibit & Citation Insertion Panels
-                    </h2>
-                    <p class="text-sm text-slate-400 mb-6">Create automatic linking for deposition exhibits. Changing text pagination inside the living workspace shifts page indexes here automatically.</p>
-
-                    <div class="space-y-4" id="exhibitsIndexList">
-                        <!-- Loaded dynamically -->
-                    </div>
-
-                    <button onclick="createNewExhibitMark()" class="mt-4 px-4 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
-                        ➕ Add New Exhibit Insertion Link
-                    </button>
-                </div>
-
-                <div class="pt-6 border-t border-slate-800 flex justify-between items-center select-none">
-                    <button onclick="goToStage(3)" class="text-slate-400 hover:text-white text-xs font-semibold">◀ Back to Transcript Edit Workspace</button>
-                    <button onclick="goToStage(5)" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
-                        Proceed to Final Certification
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Pre-rendered appearances preview page in Word doc form -->
-            <div class="w-full md:w-96 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-3 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-                        Index Rendering Preview
-                    </h3>
-                    <p class="text-xs text-slate-400 mb-4">Auto-rendered exhibit index section as compiled for the final PDF bundle output.</p>
-
-                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl font-mono text-[10px] leading-5 text-slate-400 h-[380px] overflow-y-auto select-none">
-                        <div class="text-center text-white font-bold border-b border-slate-800 pb-2 mb-3">EXHIBIT INDEX SECTION</div>
-                        <p class="text-center mb-2">--- EXHIBIT NUMBER 1 ---</p>
-                        <p class="flex justify-between"><span>Description: MRI Scans</span><span class="text-white">Page 1</span></p>
-                        <p class="flex justify-between"><span>Marked/Identified:</span><span class="text-white">Page 1, Line 12</span></p>
-                        <p class="flex justify-between"><span>Offered into Evidence:</span><span class="text-white">Page 1, Line 15</span></p>
-
-                        <p class="text-center mt-4 mb-2">--- EXHIBIT NUMBER 2 ---</p>
-                        <p class="flex justify-between"><span>Description: MD License</span><span class="text-white">Page 1</span></p>
-                        <p class="flex justify-between"><span>Marked/Identified:</span><span class="text-white">Page 1, Line 22</span></p>
-                        <p class="flex justify-between"><span>Offered into Evidence:</span><span class="text-white">Page 1, Line 24</span></p>
-                    </div>
-                </div>
-
-                <div class="bg-indigo-950/40 p-3 rounded-lg border border-indigo-500/10 mt-4 select-none">
-                    <p class="text-[11px] text-indigo-300 leading-relaxed italic">"Line changes directly shift table pointers. Index page counts rebuild on final compiling run."</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- STAGE 5: CERTIFICATION (READ-ONLY GATE & COMPLIANCE SIG) -->
-        <div id="stagePanel5" class="stage-panel flex-1 flex flex-col p-6 items-center justify-center hidden">
-            <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none"></div>
-
-                <!-- UNLOCKED CERT CARD -->
-                <div class="relative z-10 text-center" id="certPreLock">
-                    <div class="mb-4 inline-flex items-center justify-center p-3.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    </div>
-
-                    <h2 class="text-2xl font-bold text-white mb-2">Final Case Certification</h2>
-                    <p class="text-sm text-slate-400 mb-6 max-w-sm mx-auto">Lock all working lines, compile final SHA checksums, and sign the official provenance trail. Edits cannot be made past this point.</p>
-
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-left space-y-3 mb-6 select-none">
-                        <label class="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="certCheck1" class="rounded border-slate-800 bg-slate-900 text-indigo-500 focus:ring-0 mt-0.5">
-                            <span>I certify speaker alignments and Texas UFM margin configurations conform to standard rules.</span>
-                        </label>
-                        <label class="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="certCheck2" class="rounded border-slate-800 bg-slate-900 text-indigo-500 focus:ring-0 mt-0.5">
-                            <span>I confirm all correction memory dictionaries are synced and signed with my personal ID.</span>
-                        </label>
-                        <label class="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="certCheck3" class="rounded border-slate-800 bg-slate-900 text-indigo-500 focus:ring-0 mt-0.5">
-                            <span>I understand this locks the transcript, shifting working layers to a sealed certified state.</span>
-                        </label>
-                    </div>
-
-                    <div class="mb-6 text-left">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Court Reporter Digital Signature Signature Code</label>
-                        <input id="reporterSignatureInput" type="text" placeholder="Type name or ID code (e.g. Richard Vance CSR)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono">
-                    </div>
-
-                    <div class="flex items-center justify-between pt-4 border-t border-slate-800 gap-4 select-none">
-                        <button onclick="goToStage(3)" class="text-slate-400 hover:text-white text-xs font-semibold font-mono">Cancel / Return to Edits</button>
-                        <button onclick="signTranscript()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-1.5">
-                            Lock & Sign Document Bundle
-                        </button>
-                    </div>
-                </div>
-
-                <!-- CERTIFIED SELECTION CARD -->
-                <div class="relative z-10 text-center hidden" id="certPostLock">
-                    <div class="mb-4 inline-flex items-center justify-center p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    </div>
-
-                    <h2 class="text-2xl font-bold text-white mb-2">Transcript Sealed & Certified</h2>
-                    <p class="text-sm text-slate-400 mb-6 max-w-sm mx-auto">Provenances signed, hash calculations computed, working layer sealed safely.</p>
-
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-left font-mono text-xs text-slate-400 space-y-2 mb-6">
-                        <p class="flex justify-between"><span>Status:</span><span class="text-emerald-400 font-bold">LOCKED & CERTIFIED</span></p>
-                        <p class="flex justify-between"><span>Signatory:</span><span id="renderedSignatory" class="text-white font-semibold">Richard Vance CSR</span></p>
-                        <p class="flex justify-between"><span>Timestamp:</span><span class="text-slate-300" id="lockTimestamp">May 19, 2026</span></p>
-                        <p class="flex justify-between"><span>SHA256 Hash:</span><span class="text-slate-500 truncate w-32 text-right">e942b03fbc193ff4bc...</span></p>
-                    </div>
-
-                    <button onclick="goToStage(6)" class="w-full px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20">
-                        Continue to File Export Panel
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- STAGE 6: EXPORT (DOCX PROPRINT ENVIRONMENT) -->
-        <div id="stagePanel6" class="stage-panel flex-1 flex flex-col md:flex-row p-6 gap-6 overflow-y-auto hidden">
-            <!-- Parameter Selection Panel -->
-            <div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
-                <div>
-                    <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Compile & Export Certified Case File
-                    </h2>
-                    <p class="text-sm text-slate-400 mb-6 leading-relaxed">Extract final legally certified depositions. Choose formatting specifications matching target jurisdiction.</p>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">File Format Preset</label>
-                            <select id="exportFormatSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-                                <option value="docx" selected>Microsoft Word (.DOCX Layout)</option>
-                                <option value="pdf">Certified PDF (With Cryptographic Stamps)</option>
-                                <option value="txt">ASCII Plain .TXT (Page & Line Aligned)</option>
-                                <option value="rtf">Rich Text Format (.RTF Style)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Line Indexing Stamp</label>
-                            <select class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono">
-                                <option value="left-index">Left-aligned (1-25) Numbers</option>
-                                <option value="double-index">Double side layout numbering</option>
-                                <option value="none">No layout borders (Plain ASCII)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Custom Watermark text</label>
-                            <input type="text" value="CERTIFIED ORIGINAL TRANSCRIPT" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-sans">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 font-sans">Exhibit Index Append</label>
-                            <div class="flex items-center gap-3 h-9">
-                                <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-300">
-                                    <input type="checkbox" checked class="rounded border-slate-800 bg-slate-950 text-indigo-500 focus:ring-0">
-                                    Append Exhibit Index at End
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onclick="triggerExportAction()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Compile and Generate Download Bundle
-                    </button>
-                </div>
-
-                <div class="pt-6 border-t border-slate-800">
-                    <button onclick="goToStage(5)" class="text-indigo-400 hover:text-indigo-300 text-xs font-semibold font-mono">🔓 Request Certification Unlock (CSR Signature Required)</button>
-                </div>
-            </div>
-
-            <!-- Pre-rendered MS Word A4 sheet mockup -->
-            <div class="w-full md:w-[480px] bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl shrink-0">
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-3 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-                        Sealed Transcript Layout Preview (DOCX)
-                    </h3>
-                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">Page representation compiled specifically to preserve double spacing and side rules upon copy-paste or export.</p>
-
-                    <div class="ms-word-page text-slate-800 border border-slate-200 p-8 h-[380px] overflow-y-auto select-none relative shadow-inner">
-                        <!-- Watermark -->
-                        <div class="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none transform -rotate-45 text-2xl font-bold text-red-600 tracking-widest">
-                            CERTIFIED TRANSCRIPT
-                        </div>
-                        <p class="text-center font-bold text-slate-600 text-[10px] mb-2 font-mono">PAGE 1</p>
-                        <p class="text-center text-slate-400 text-[9px] border-b border-slate-100 pb-2 mb-2 font-mono">SARAH JENKINS vs. NEXUS PHARMA INC.</p>
-
-                        <div class="flex gap-4 font-mono text-[9px] leading-5">
-                            <div class="text-slate-400 text-right w-4 border-r border-red-200 pr-2">
-                                1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15
-                            </div>
-                            <div class="flex-1 space-y-1 text-slate-700">
-                                <p class="text-[8px] text-slate-400 uppercase">PROCEEDINGS, TUESDAY, MAY 19, 2026</p>
-                                <p>DR. DONALD LEIFER, testified as follows:</p>
-                                <p class="font-bold text-slate-800">EXAMINATION BY MR. RICHARD VANCE:</p>
-                                <p class="pl-4">Q.  State your full name and credentials for the record.</p>
-                                <p class="pl-4">A.  Dr. Donald Leifer, specialized Neurosurgeon at</p>
-                                <p class="pl-4">MD Medical Group, Houston Texas.</p>
-                                <p class="pl-4">Q.  Did you examine Sarah Jenkins prior to the procedure?</p>
-                                <p class="pl-4">A.  Yes, the Acoustic Neuroma scans were taken</p>
-                                <p class="pl-4">on the afternoon of October 12th.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-500/20 mt-4 text-center">
-                    <p class="text-xs text-emerald-300 font-bold">✓ Case Bundle Sealed Safe & Ready</p>
-                </div>
-            </div>
-        </div>
-
+        <div id="appRoot" class="flex-1 flex overflow-hidden"></div>
     </main>
-
     <!-- STATE MANAGEMENT & RUNTIME LOGIC -->
+    <script src="assets/js/router.js"></script>
     <script>
         // System Application State Model
         const state = {
@@ -1207,10 +274,7 @@
             liveSearchQuery: ""
         };
 
-        // Window Initializer
-        window.onload = function() {
-            // Seed Raw Notes workspace text with real-world Texas scheduling metadata
-            document.getElementById('rawIntakeNotes').value = `REPORTER SCHEDULING NOTE:
+        const initialRawNotesSeed = `REPORTER SCHEDULING NOTE:
 Deposition of Dr. Donald Leifer held on May 19, 2026.
 Case Caption: SARAH JENKINS vs. NEXUS PHARMA INC.
 Cause No. 2024-CI-28593
@@ -1221,21 +285,33 @@ Court Reporter: Richard Vance, CSR License 3465, expiration 2027-12-31, Firm Reg
 Custodial Attorney: Ms. Elizabeth R. Flora, Esq. representing Plaintiff sarah jenkins.
 Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
 
+        function seedRawIntakeNotes() {
+            const rawNotesField = document.getElementById('rawIntakeNotes');
+            if (rawNotesField && !rawNotesField.value.trim()) {
+                rawNotesField.value = initialRawNotesSeed;
+            }
+        }
+
+        // Window Initializer
+        window.onload = function() {
+            seedRawIntakeNotes();
             renderAllStateComponents();
-            checkSchemaValidationStatus();
+            if (document.getElementById('validationSummaryBadge')) {
+                checkSchemaValidationStatus();
+            }
             showToast("Workspace initialized. Texas UFM layout active.");
         };
 
         // Complete state rendering dispatch
         function renderAllStateComponents() {
-            renderSpeakersList();
-            renderCorrectionMemory();
-            renderProvenanceTimeline();
-            compileAndRenderTranscript();
-            renderExhibitsIndex();
-            updateStatsBar();
-            renderFileQueue();
-            renderSpellingDictionarySeeds();
+            if (document.getElementById('speakersList')) renderSpeakersList();
+            if (document.getElementById('correctionsMemoryContainer')) renderCorrectionMemory();
+            if (document.getElementById('provenanceLogContainer')) renderProvenanceTimeline();
+            if (document.getElementById('transcriptLinesContainer')) compileAndRenderTranscript();
+            if (document.getElementById('exhibitsIndexList')) renderExhibitsIndex();
+            if (document.getElementById('flagCount')) updateStatsBar();
+            if (document.getElementById('sequentialQueueList')) renderFileQueue();
+            if (document.getElementById('intakeEntitiesList')) renderSpellingDictionarySeeds();
         }
 
         // Custom notification system (replaces alert/confirm)
@@ -1308,6 +384,9 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
 
         // Run validation calculations over all fields
         function checkSchemaValidationStatus() {
+            const summaryBadge = document.getElementById('validationSummaryBadge');
+            if (!summaryBadge) return;
+
             const fields = [
                 'ufmCause', 'ufmStyle', 'ufmCourt', 'ufmCounty', 'ufmState',
                 'ufmWitness', 'ufmDate', 'ufmStartTime', 'ufmEndTime', 'ufmAddress',
@@ -1323,7 +402,6 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
                 }
             });
 
-            const summaryBadge = document.getElementById('validationSummaryBadge');
             if (incomplete) {
                 summaryBadge.innerText = "⚠️ SCHEMA INCOMPLETE";
                 summaryBadge.className = "text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold";
@@ -1388,6 +466,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
         // Render intake seeds
         function renderSpellingDictionarySeeds() {
             const list = document.getElementById('intakeEntitiesList');
+            if (!list) return;
             list.innerHTML = "";
 
             const seeds = [
@@ -1424,19 +503,18 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
                 return;
             }
 
+            // Update tab highlights
             for (let i = 1; i <= 6; i++) {
                 const tab = document.getElementById(`stageTab${i}`);
-                const panel = document.getElementById(`stagePanel${i}`);
-
+                if (!tab) continue;
                 if (i === stageNum) {
                     tab.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 shadow-sm";
-                    if (panel) panel.classList.remove('hidden');
                 } else {
                     tab.className = "px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800";
-                    if (panel) panel.classList.add('hidden');
                 }
             }
             state.currentStage = stageNum;
+            loadScreen(stageNum);
             showToast(`Stage loaded: ${getStageName(stageNum)}`);
         }
 
@@ -1508,6 +586,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
         function renderFileQueue() {
             const list = document.getElementById('sequentialQueueList');
             const submitBtn = document.getElementById('btnIngestQueue');
+            if (!list || !submitBtn) return;
             list.innerHTML = "";
 
             if (state.fileQueue.length === 0) {
@@ -2014,6 +1093,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
         // Compile and render Texas UFM conforming to standard page boundaries
         function compileAndRenderTranscript() {
             const linesContainer = document.getElementById('transcriptLinesContainer');
+            if (!linesContainer) return;
             linesContainer.innerHTML = "";
 
             let currentLineNumberOnPage = 1;
@@ -2384,6 +1464,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
         // Sidebar rendering drivers
         function renderSpeakersList() {
             const list = document.getElementById('speakersList');
+            if (!list) return;
             list.innerHTML = "";
             const distinct = [...new Set(state.transcriptLines.map(l => l.speaker).filter(s => s !== "SYSTEM" && s !== "SYSTEM INDEXER"))];
 
@@ -2403,6 +1484,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
 
         function renderCorrectionMemory() {
             const container = document.getElementById('correctionsMemoryContainer');
+            if (!container) return;
             container.innerHTML = "";
             state.correctionsMemory.forEach(corr => {
                 const item = document.createElement('div');
@@ -2421,6 +1503,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
 
         function renderProvenanceTimeline() {
             const container = document.getElementById('provenanceLogContainer');
+            if (!container) return;
             container.innerHTML = "";
             state.provenance.slice().reverse().forEach(log => {
                 const item = document.createElement('div');
@@ -2454,6 +1537,7 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
         // Exhibits index lists
         function renderExhibitsIndex() {
             const container = document.getElementById('exhibitsIndexList');
+            if (!container) return;
             container.innerHTML = "";
             state.exhibits.forEach(ex => {
                 const div = document.createElement('div');
@@ -2500,7 +1584,9 @@ Acoustic spellings to sync: Acoustic Neuroma, cranial, Leifer.`;
 
         function updateStatsBar() {
             const suggestionsCount = state.transcriptLines.filter(l => l.hasSuggestion).length;
-            document.getElementById('flagCount').innerText = `${suggestionsCount} pending flags`;
+            const flagCount = document.getElementById('flagCount');
+            if (!flagCount) return;
+            flagCount.innerText = `${suggestionsCount} pending flags`;
         }
 
         // Certification & Verification sign execution
@@ -2579,6 +1665,30 @@ PAGE 1
         function simulateSave() {
             showToast("Saving living transcript arrays to local IndexedDB...", "emerald");
         }
+
+        window.addEventListener("screen:loaded", (e) => {
+            const stageNum = e.detail.stageNum;
+            // Re-bind handlers and re-render data into the freshly-mounted screen
+            try {
+                if (stageNum === 1) {
+                    seedRawIntakeNotes();
+                    renderSpellingDictionarySeeds && renderSpellingDictionarySeeds();
+                    checkSchemaValidationStatus && checkSchemaValidationStatus();
+                } else if (stageNum === 2) {
+                    renderFileQueue && renderFileQueue();
+                } else if (stageNum === 3) {
+                    compileAndRenderTranscript && compileAndRenderTranscript();
+                    renderSpeakersList && renderSpeakersList();
+                    renderCorrectionMemory && renderCorrectionMemory();
+                    renderProvenanceTimeline && renderProvenanceTimeline();
+                    updateStatsBar && updateStatsBar();
+                } else if (stageNum === 4) {
+                    renderExhibitsIndex && renderExhibitsIndex();
+                }
+            } catch (err) {
+                console.warn(`Render error for stage ${stageNum}:`, err);
+            }
+        });
     </script>
 </body>
 </html>
