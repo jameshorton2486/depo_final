@@ -43,7 +43,7 @@ A native desktop window opens displaying the workspace. Right-click -> Inspect f
 - Phase A.1: Screen decomposition + router ✓
 - Phase A.2: Extract shared CSS/JS ✓
 - Phase A.3: Per-screen polish + schema doc ✓ (tag: `phase-a-complete`)
-- Phase B: FastAPI backend + SQLite per `docs/ufm_schema_v1.md` — next up; first cut wires Stage 1 intake to real case/session create endpoints
+- Phase B: FastAPI backend + SQLite per `docs/ufm_schema_v1.md`, plus NOD parsing per `docs/nod_parser_spec.md` — next up; first cut wires Stage 1 intake to real case/session create endpoints
 - Phase C: Deepgram, AI cleanup, real DOCX/PDF export
 - Phase D: Word-timing sync, cryptographic certification chain, multi-reviewer workflow
 

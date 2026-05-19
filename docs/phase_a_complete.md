@@ -16,6 +16,7 @@
 - Real case load/save/list endpoints
 - Form template support (S.A. Legal Solutions default)
 - Paste-and-parse intake parser
+- Notice of Deposition (NOD) parser per docs/nod_parser_spec.md
 - Session creation flow (case → session relationship in UI)
 
 ## What's deferred to Phase C

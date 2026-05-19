@@ -251,3 +251,100 @@ reviewed_words:
 issue_categories:
   category_id, label, default_priority
 ```
+
+## Canonical Test Case — Heath Thomas / Delia Garza NOD
+
+This schema is exercised by the canonical bundled NOD test case defined in [nod_parser_spec.md](/abs/path/C:/Users/james/depo_final/docs/nod_parser_spec.md). Phase B parser work is correct when the extracted case, party, session, attorney, reporting-firm, and keyterms outputs match that spec.
+
+Expected parser output:
+
+```yaml
+case:
+  jurisdiction_type: federal
+  case_number_label: civil_action_no
+  case_number_value: "25-cv-00598-OLG"
+  court_district: "Western District of Texas"
+  court_division: "San Antonio Division"
+  state: Texas
+
+parties:
+  - role: plaintiff
+    name: "Delia Garza"
+    entity_type: individual
+    sort_order: 1
+  - role: defendant
+    name: "Home Depot U.S.A., Inc."
+    fka_or_dba: "The Home Depot"
+    entity_type: corporation
+    sort_order: 2
+  - role: defendant
+    name: "Shawn Herber"
+    entity_type: individual
+    sort_order: 3
+
+session:
+  scheduled_at: "2026-04-30T13:30:00-05:00"
+  witness_name: "Heath Thomas"
+  witness_type: individual
+  location_type: zoom
+  service_type: CR_plus_Zoom
+  csr_required: true
+  ordered_by: "Tiffany Netcher"
+  outcome: pending
+
+attorneys:
+  - full_name: "Steven A. Nunez"
+    bar_state: TX
+    bar_number: "24107206"
+    firm_name: "Brain and Spine Personal Injury Lawyers of San Antonio, PLLC"
+    address: "8620 N New Braunfels Ave, Ste. N 604"
+    city: "San Antonio"
+    state: TX
+    zip: "78217-4000"
+    phone: "(210) 999-5033"
+    email: "service@brainspine-law.com"
+    represents: plaintiff
+    is_lead: true
+
+  - full_name: "Jacob D. Cukjati"
+    bar_state: TX
+    bar_number: "24101188"
+    firm_name: "Cukjati Law Firm, PLLC"
+    address: "875 East Ashby Place, Ste. 1225"
+    city: "San Antonio"
+    state: TX
+    zip: "78212"
+    phone: "726-239-4423"
+    fax: "726-256-5224"
+    email: "service@cukjati-law.com"
+    represents: plaintiff
+    is_lead: false
+
+  - full_name: "Curtis L. Cukjati"
+    bar_state: TX
+    bar_number: "05207540"
+    firm_name: "Cukjati Law Firm, PLLC"
+    represents: plaintiff
+    is_lead: false
+    role_label: "Of Counsel"
+
+  - full_name: "Karen M. Alvarado"
+    firm_name: "Brothers, Alvarado, Piazza & Cozort, P.C."
+    address: "10333 Richmond Avenue, Suite 900"
+    city: "Houston"
+    state: TX
+    zip: "77042"
+    phone: "(713) 337-0750"
+    fax: "(713) 337-0760"
+    email: "service-alvarado@brothers-law.com"
+    represents: defendant
+    represents_party_name: "Home Depot U.S.A., Inc."
+    is_lead: true
+
+reporting_firm:
+  name: "S.A. Legal Solutions"
+
+reporter:
+  name: "Heath Thomas"
+  (CSR/expiration/firm registration loaded from saved profile, not from NOD)
+```
