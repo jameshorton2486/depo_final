@@ -173,25 +173,26 @@
             if (!tbody) return;
 
             const rows = [];
-            if (state.caseInfo.deponent) {
-                rows.push({ term: state.caseInfo.deponent, category: 'Deponent', source: 'Notice parser', boost: 1.5 });
-            }
-            if (state.caseInfo.csrName) {
-                rows.push({ term: state.caseInfo.csrName, category: 'Reporter', source: 'Notice parser', boost: 1.0 });
-            }
-            if (state.caseInfo.custodialName) {
-                rows.push({ term: state.caseInfo.custodialName, category: 'Attorney', source: 'Notice parser', boost: 1.2 });
-            }
-            if (state.caseInfo.requestingParty) {
-                rows.push({ term: state.caseInfo.requestingParty, category: 'Firm', source: 'Notice parser', boost: 1.0 });
-            }
+            const seenTerms = new Set();
+            const addRow = (term, category, source, boost) => {
+                if (!term) return;
+                const key = term.trim().toLowerCase();
+                if (seenTerms.has(key)) return;
+                seenTerms.add(key);
+                rows.push({ term, category, source, boost });
+            };
+
+            if (state.caseInfo.deponent) addRow(state.caseInfo.deponent, 'Deponent', 'Notice parser', 1.5);
+            if (state.caseInfo.csrName) addRow(state.caseInfo.csrName, 'Reporter', 'Notice parser', 1.0);
+            if (state.caseInfo.custodialName) addRow(state.caseInfo.custodialName, 'Attorney', 'Notice parser', 1.2);
+            if (state.caseInfo.requestingParty) addRow(state.caseInfo.requestingParty, 'Firm', 'Notice parser', 1.0);
             (state.correctionsMemory || []).forEach(corr => {
-                rows.push({
-                    term: corr.replacement,
-                    category: 'Medical',
-                    source: corr.scope === 'global' ? 'Learned' : 'Notice parser',
-                    boost: 1.5
-                });
+                addRow(
+                    corr.replacement,
+                    'Medical',
+                    corr.scope === 'global' ? 'Learned' : 'Notice parser',
+                    1.5
+                );
             });
 
             tbody.innerHTML = "";
@@ -280,11 +281,22 @@
 
         function buildKeytermsPayload() {
             const terms = [];
-            if (state.caseInfo.deponent) terms.push({ term: state.caseInfo.deponent, boost: 1.5, source: 'notice_parser' });
-            if (state.caseInfo.csrName) terms.push({ term: state.caseInfo.csrName, boost: 1.0, source: 'notice_parser' });
-            if (state.caseInfo.custodialName) terms.push({ term: state.caseInfo.custodialName, boost: 1.2, source: 'notice_parser' });
-            if (state.caseInfo.requestingParty) terms.push({ term: state.caseInfo.requestingParty, boost: 1.0, source: 'notice_parser' });
-            (state.correctionsMemory || []).forEach(c => terms.push({ term: c.replacement, boost: 1.5, source: c.scope === 'global' ? 'learned' : 'notice_parser' }));
+            const seen = new Set();
+            const addTerm = (term, boost, source) => {
+                if (!term) return;
+                const key = term.trim().toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                terms.push({ term, boost, source });
+            };
+
+            if (state.caseInfo.deponent) addTerm(state.caseInfo.deponent, 1.5, 'notice_parser');
+            if (state.caseInfo.csrName) addTerm(state.caseInfo.csrName, 1.0, 'notice_parser');
+            if (state.caseInfo.custodialName) addTerm(state.caseInfo.custodialName, 1.2, 'notice_parser');
+            if (state.caseInfo.requestingParty) addTerm(state.caseInfo.requestingParty, 1.0, 'notice_parser');
+            (state.correctionsMemory || []).forEach(c => {
+                addTerm(c.replacement, 1.5, c.scope === 'global' ? 'learned' : 'notice_parser');
+            });
             return {
                 case_id: 'pending_phase_b',
                 case_caption: state.caseInfo.caption || null,
