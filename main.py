@@ -1,15 +1,23 @@
-"""Depo-Pro desktop launcher (Phase A.1)."""
-import http.server
-import os
-import socketserver
+"""Depo-Pro desktop launcher (Phase B.1).
+
+Starts the FastAPI backend on a background thread, then opens PyWebView
+pointing at the FastAPI server URL. The backend serves both the API
+(routes under /health, future /cases, /sessions, etc.) and the static UI
+files via FastAPI's StaticFiles mount.
+
+The stdlib http.server from Phase A.1 is no longer used.
+"""
+from __future__ import annotations
+
 import threading
 import time
 
+import uvicorn
 import webview
+from loguru import logger
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-UI_ROOT = os.path.join(PROJECT_ROOT, "ui")
-PORT = 47853  # Arbitrary, unlikely to collide
+from backend import config
+from backend.app import app as fastapi_app
 
 WINDOW_TITLE = "Depo-Pro"
 WINDOW_WIDTH = 1600
@@ -18,35 +26,34 @@ MIN_WIDTH = 1280
 MIN_HEIGHT = 800
 
 
-class QuietHandler(http.server.SimpleHTTPRequestHandler):
-    def log_message(self, format, *args):
-        pass  # Silence per-request log spam
-
-
-def start_local_server():
-    handler = lambda *a, **kw: QuietHandler(*a, directory=UI_ROOT, **kw)
-    httpd = socketserver.TCPServer(("127.0.0.1", PORT), handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    return httpd
+def run_backend() -> None:
+    """Run the FastAPI server. Called on a background daemon thread."""
+    uvicorn.run(
+        fastapi_app,
+        host=config.BACKEND_HOST,
+        port=config.BACKEND_PORT,
+        log_level="info" if config.DEBUG else "warning",
+        access_log=config.DEBUG,
+    )
 
 
 def main() -> None:
-    index_path = os.path.join(UI_ROOT, "index.html")
-    if not os.path.isfile(index_path):
-        raise FileNotFoundError(f"Expected HTML shell at {index_path}")
+    backend_thread = threading.Thread(target=run_backend, daemon=True)
+    backend_thread.start()
 
-    start_local_server()
-    time.sleep(0.3)  # Give the server a beat to bind
+    time.sleep(0.6)
+
+    backend_url = f"http://{config.BACKEND_HOST}:{config.BACKEND_PORT}/index.html"
+    logger.info(f"Opening PyWebView at {backend_url}")
 
     webview.create_window(
         title=WINDOW_TITLE,
-        url=f"http://127.0.0.1:{PORT}/index.html",
+        url=backend_url,
         width=WINDOW_WIDTH,
         height=WINDOW_HEIGHT,
         min_size=(MIN_WIDTH, MIN_HEIGHT),
     )
-    webview.start(debug=True)
+    webview.start(debug=config.DEBUG)
 
 
 if __name__ == "__main__":

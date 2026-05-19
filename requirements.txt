@@ -1,1 +1,12 @@
-pywebview>=5.0
+# Phase A.0 - desktop shell
+pywebview>=5.4
+
+# Phase B.1 - FastAPI backend scaffold
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+python-dotenv>=1.0
+loguru>=0.7
+
+# Phase B.2 will add: SQLite is stdlib (no install needed)
+# Phase B.3 will add: deepgram-sdk, pdfplumber, soundfile, pyloudnorm, torch (silero-vad), numpy
