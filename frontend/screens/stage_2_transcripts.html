@@ -74,6 +74,69 @@
             </div>
             <div id="transcriptSummaryGrid" class="result-grid"></div>
         </div>
+        <div class="result-card live-realtime-shell">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Live Streaming</p>
+                    <h4>Zoom RTMS + realtime transcript feed</h4>
+                </div>
+                <span id="realtimeConnectionBadge" class="chip neutral">Disconnected</span>
+            </div>
+            <div class="transcript-upload-grid">
+                <label class="field-group">
+                    <span class="field-label">Zoom Meeting Id</span>
+                    <input
+                        id="realtimeMeetingId"
+                        class="text-input"
+                        type="text"
+                        placeholder="Optional meeting id"
+                    />
+                </label>
+                <label class="field-group">
+                    <span class="field-label">Zoom Passcode</span>
+                    <input
+                        id="realtimePasscode"
+                        class="text-input"
+                        type="text"
+                        placeholder="Optional passcode"
+                    />
+                </label>
+            </div>
+            <div class="action-row">
+                <button id="realtimeStartButton" class="primary-button" type="button">
+                    Start Live Stream
+                </button>
+                <button id="realtimeStopButton" class="secondary-button" type="button">
+                    Stop Live Stream
+                </button>
+                <span id="realtimeStatus" class="status-pill" data-state="idle"
+                    >Live stream idle</span
+                >
+            </div>
+            <div class="transcript-status-grid">
+                <div class="result-card">
+                    <h4>Stream Diagnostics</h4>
+                    <div id="realtimeDiagnostics" class="stack-list">
+                        <div class="stack-item"><strong>Status</strong><span>Idle</span></div>
+                        <div class="stack-item"><strong>Packets</strong><span>0</span></div>
+                    </div>
+                </div>
+                <div class="result-card">
+                    <h4>Live Read-back</h4>
+                    <label class="field-group">
+                        <span class="field-label">Rolling keyword search</span>
+                        <input
+                            id="realtimeReadbackQuery"
+                            class="text-input"
+                            type="text"
+                            placeholder="Search live transcript"
+                        />
+                    </label>
+                    <div id="realtimeSpeakerList" class="badge-row"></div>
+                </div>
+            </div>
+            <div id="realtimeViewer" class="transcript-viewer"></div>
+        </div>
         <div class="result-card">
             <div class="panel-header">
                 <div>

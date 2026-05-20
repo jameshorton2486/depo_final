@@ -147,3 +147,39 @@ async function fetchExportHistory(sessionId) {
     }
     return response.json();
 }
+
+async function startRealtimeSession(payload) {
+    const response = await fetch('/api/realtime/start', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Realtime start failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function stopRealtimeSession(payload) {
+    const response = await fetch('/api/realtime/stop', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Realtime stop failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchRealtimeStatus(sessionId) {
+    const response = await fetch(`/api/realtime/status/${sessionId}`);
+    if (!response.ok) {
+        throw new Error(`Realtime status failed with ${response.status}`);
+    }
+    return response.json();
+}

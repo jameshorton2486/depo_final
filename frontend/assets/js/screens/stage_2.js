@@ -12,6 +12,18 @@ window.stage2Module = {
     },
 };
 
+const realtimeState = {
+    socket: null,
+    buffer: {
+        timeline: [],
+        wordTimeline: [],
+        speakerLabels: [],
+        packetCount: 0,
+        lastLatencyMs: 0,
+        status: 'idle',
+    },
+};
+
 function bindTranscriptEvents() {
     document
         .getElementById('transcriptStartButton')
@@ -20,11 +32,17 @@ function bindTranscriptEvents() {
         .getElementById('transcriptReloadButton')
         .addEventListener('click', handleTranscriptReload);
     document.getElementById('transcriptFile').addEventListener('change', handleTranscriptPreview);
+    document.getElementById('realtimeStartButton').addEventListener('click', handleRealtimeStart);
+    document.getElementById('realtimeStopButton').addEventListener('click', handleRealtimeStop);
+    document
+        .getElementById('realtimeReadbackQuery')
+        .addEventListener('input', handleRealtimeReadback);
 }
 
 function seedTranscriptFields() {
     document.getElementById('transcriptCaseId').value = appState.currentCaseId || '';
     document.getElementById('transcriptSessionId').value = appState.currentSessionId || '';
+    document.getElementById('realtimeMeetingId').value = appState.realtimeMeetingId || '';
 }
 
 async function handleTranscriptionStart() {
@@ -223,6 +241,108 @@ function renderTranscriptViewer(blocks = []) {
 
 function updateTranscriptStatus(message, state) {
     const element = document.getElementById('transcriptStatus');
+    element.textContent = message;
+    element.dataset.state = state;
+}
+
+async function handleRealtimeStart() {
+    const sessionId = Number(
+        document.getElementById('transcriptSessionId').value || appState.currentSessionId,
+    );
+    if (!sessionId) {
+        updateRealtimeStatus('Session id is required before starting live stream.', 'error');
+        return;
+    }
+    const meetingId = document.getElementById('realtimeMeetingId').value.trim() || null;
+    const passcode = document.getElementById('realtimePasscode').value.trim() || null;
+    appState.realtimeMeetingId = meetingId || '';
+    persistState();
+    const status = await startRealtimeSession({
+        session_id: sessionId,
+        meeting_id: meetingId,
+        passcode: passcode,
+        source_label: 'zoom_rtms',
+        mock: true,
+    });
+    bindRealtimeSocket(sessionId);
+    renderRealtimeStatus(status);
+    updateRealtimeStatus(`Live stream started for session ${sessionId}`, 'working');
+}
+
+async function handleRealtimeStop() {
+    const sessionId = Number(
+        document.getElementById('transcriptSessionId').value || appState.currentSessionId,
+    );
+    if (!sessionId) {
+        updateRealtimeStatus('No realtime session is loaded.', 'error');
+        return;
+    }
+    const status = await stopRealtimeSession({ session_id: sessionId, reason: 'ui_stop' });
+    renderRealtimeStatus(status);
+    if (realtimeState.socket) {
+        realtimeState.socket.close();
+        realtimeState.socket = null;
+    }
+    updateRealtimeStatus(`Live stream stopped for session ${sessionId}`, 'success');
+}
+
+function bindRealtimeSocket(sessionId) {
+    if (realtimeState.socket) {
+        realtimeState.socket.close();
+    }
+    realtimeState.socket = realtimeWebSocketClient.connect(sessionId, {
+        onOpen: () => {
+            document.getElementById('realtimeConnectionBadge').textContent = 'Connected';
+        },
+        onClose: () => {
+            document.getElementById('realtimeConnectionBadge').textContent = 'Disconnected';
+        },
+        onMessage: handleRealtimeMessage,
+    });
+}
+
+function handleRealtimeMessage(message) {
+    if (message.type === 'snapshot') {
+        realtimeState.buffer = liveBufferStore.snapshot(message.payload);
+        renderRealtimeBuffer(realtimeState.buffer.timeline);
+        renderRealtimeStatus(message.status);
+        return;
+    }
+    if (message.type === 'transcript_update') {
+        realtimeState.buffer = liveBufferStore.append(realtimeState.buffer, message.payload);
+        renderRealtimeBuffer(realtimeState.buffer.timeline);
+        renderRealtimeStatus(message.status);
+        return;
+    }
+    if (message.type === 'stream_complete') {
+        renderRealtimeStatus(message.status);
+        updateRealtimeStatus('Live stream completed.', 'success');
+        return;
+    }
+    if (message.type === 'stream_error') {
+        renderRealtimeStatus(message.status);
+        updateRealtimeStatus(message.error || 'Realtime stream error', 'error');
+    }
+}
+
+function renderRealtimeStatus(status) {
+    document.getElementById('realtimeDiagnostics').innerHTML = liveDiagnosticsView.render(status);
+    document.getElementById('realtimeSpeakerList').innerHTML = liveSpeakerView.render(
+        status.speaker_labels || realtimeState.buffer.speakerLabels || [],
+    );
+}
+
+function renderRealtimeBuffer(blocks) {
+    document.getElementById('realtimeViewer').innerHTML = liveTranscriptRenderer.render(blocks);
+}
+
+function handleRealtimeReadback(event) {
+    const blocks = liveReadback.filter(realtimeState.buffer.timeline, event.target.value);
+    renderRealtimeBuffer(blocks);
+}
+
+function updateRealtimeStatus(message, state) {
+    const element = document.getElementById('realtimeStatus');
     element.textContent = message;
     element.dataset.state = state;
 }

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -14,6 +14,14 @@ from backend.export.export_service import (
     export_package_bundle,
     export_txt_bundle,
     get_export_history,
+)
+from backend.realtime.realtime_service import (
+    RealtimeStartRequest,
+    RealtimeStopRequest,
+    get_realtime_status,
+    realtime_manager,
+    start_realtime_session,
+    stop_realtime_session,
 )
 from backend.review.audit_logger import list_audit_events
 from backend.review.confidence_queue import ensure_review_queue
@@ -174,6 +182,36 @@ async def export_history(session_id: int) -> dict[str, object]:
         return get_export_history(session_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/realtime/start")
+async def realtime_start(request: RealtimeStartRequest) -> dict[str, object]:
+    try:
+        return await start_realtime_session(request)
+    except (LookupError, ValueError) as exc:
+        status_code = 404 if isinstance(exc, LookupError) else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+
+@app.post("/api/realtime/stop")
+async def realtime_stop(request: RealtimeStopRequest) -> dict[str, object]:
+    try:
+        return await stop_realtime_session(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/realtime/status/{session_id}")
+async def realtime_status(session_id: int) -> dict[str, object]:
+    try:
+        return get_realtime_status(session_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.websocket("/ws/transcript/{session_id}")
+async def transcript_websocket(websocket: WebSocket, session_id: int) -> None:
+    await realtime_manager.websocket_session(websocket, session_id)
 
 
 app.mount(

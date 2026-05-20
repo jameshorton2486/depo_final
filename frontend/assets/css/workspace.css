@@ -232,6 +232,11 @@
     gap: 12px;
 }
 
+.live-realtime-shell {
+    display: grid;
+    gap: 16px;
+}
+
 .transcript-block-card {
     padding: 18px;
     border-radius: 18px;
