@@ -10,6 +10,7 @@ venv/
 # PyCharm / IDE
 .idea/
 .vscode/
+node_modules/
 
 # PyWebView
 *.webview
@@ -21,6 +22,10 @@ Thumbs.db
 # Project data
 data/cases/*
 !data/cases/.gitkeep
+data/sqlite/*.db
+data/sqlite/*.db-journal
+data/sqlite/*.db-wal
+data/sqlite/*.db-shm
 
 # Personal scratch files
 MY_CHEATS.txt
@@ -35,6 +40,7 @@ MY_CHEATS.txt
 
 # Logs
 *.log
+npm-debug.log*
 
 # Local SQLite database - never commit user data
 data/.sqlite3

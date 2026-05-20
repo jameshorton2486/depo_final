@@ -1,43 +1,50 @@
-# Depo-Pro Architecture
+# DEPO-PRO Phase 1 Architecture
 
-## Four-Layer Separation
+## Scope
 
-Depo-Pro's data model strictly separates four layers. Mixing them is the single biggest cause of legacy transcript systems becoming unstable, and avoiding it is the most important architectural decision in this project.
+Phase 1 establishes the local-first application foundation for a legal deposition production workspace. It includes:
 
-### Layer 1: Intake Metadata
-Who, what, when, where. Cases, parties, attorneys, sessions, reporters, reporting firms, form templates.
+- a FastAPI backend shell
+- a static HTML/CSS/JavaScript frontend shell
+- SQLite initialization via `sqlite3`
+- a PyWebView desktop runtime
+- shared configuration and maintenance tooling
 
-### Layer 2: Transcript Metadata
-What happened on the record. Session events (start/break/recess), exhibits, time-on-record per attorney, interpreters, non-appearance events, transcript assets (paths to audio/video/JSON).
+This phase does not include transcription, review, export generation, Deepgram integration, realtime systems, or transcript editing.
 
-### Layer 3: Transcript Content (Canonical)
-The words themselves, time-based and semantic. Transcript blocks → utterance segments → word objects. NEVER page-based — pagination is rendering, not truth.
+## Runtime Layout
 
-### Layer 4: Export Formatting (Rendering)
-How the canonical content is rendered for a target firm or format. Firm export templates, boilerplate blocks, transcript pages, transcript lines, generated outputs. This layer reads from Layers 1-3 and writes to itself — never the other way around.
+- `backend/app.py` exposes `/api/health` and serves the frontend shell.
+- `backend/database/init_db.py` creates the Phase 1 starter tables in `data/sqlite/depo_pro.db`.
+- `frontend/` contains a stage-based shell with dynamic screen loading and persistent local state.
+- `desktop/launcher.py` starts FastAPI on a background thread and opens the local UI in PyWebView.
 
-## Hierarchical Data Model
+## Data Model
 
-Case → Sessions → Outcomes
+The initial schema is intentionally minimal:
 
-A case can have multiple sessions (continuations, multiple witnesses, reschedules). Each session has exactly one outcome: transcript_proceeding, certified_non_appearance, cancelled, or rescheduled.
+- `cases`
+- `sessions`
+- `transcript_assets`
 
-## Stack
+These tables establish the relationships needed for later deposition workflow phases without introducing later-phase business rules.
 
-- Frontend: HTML + CSS + JavaScript (no build step)
-- Desktop shell: PyWebView
-- Local HTTP server: stdlib http.server (so fetch() works for screen files)
-- Backend (Phase B): FastAPI
-- Database (Phase B): SQLite (json columns, not jsonb)
-- AI (Phase C): Deepgram for ASR, Anthropic/OpenAI for cleanup
+## Frontend Foundation
 
-## Why Not Streamlit
+The UI provides:
 
-Streamlit was the original direction. Rejected because:
-- Rerun model fights stateful transcript editing
-- Audio sync requires precise DOM control
-- Word-style review layout is hard to achieve
-- Component layout is restrictive
-- Deployment friction outweighs the convenience
+- left navigation rail
+- top workspace header
+- six-stage pipeline indicator
+- RAW and WORKING layer badges
+- responsive dark/light theme toggle
+- stage routing and screen caching
 
-The HTML/PyWebView stack costs more upfront but pays for itself the first time a transcript editor needs to play audio while highlighting word-level timing.
+## Extension Path
+
+Later phases can add:
+
+- API routers under `backend/api/`
+- domain logic under `backend/services/`
+- transcript-specific processing under `backend/transcript/`
+- preprocessing and Deepgram integrations in their reserved packages

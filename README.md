@@ -1,50 +1,100 @@
-# Depo-Pro
+# DEPO-PRO
 
-Local Streamlit-replacement desktop application for Texas court reporter deposition workflow. Static HTML/CSS/JS frontend in a PyWebView desktop shell, with a FastAPI backend and SQLite database (to be added in Phase B).
+DEPO-PRO Phase 1 establishes the local-first foundation for a legal deposition production workspace. This phase includes the frontend shell, backend shell, SQLite initialization, PyWebView desktop runtime, shared configuration, and development tooling only.
 
-## Architecture
+## Environment Setup
 
-- Frontend: HTML, CSS, JavaScript (no build step)
-- Desktop shell: PyWebView
-- Backend: FastAPI (Phase B)
-- Database: SQLite (Phase B)
-- AI: Deepgram, OpenAI/Anthropic (Phase C)
+DEPO-PRO Phase 1 targets:
 
-## Project Structure
+- Windows 11
+- Python 3.13
+- PyCharm or another local Python IDE
+
+Create and activate a virtual environment:
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```powershell
+pip install -r backend\requirements.txt
+```
+
+Optional frontend tooling for maintenance scripts:
+
+```powershell
+npm install --save-dev prettier eslint
+```
+
+## Launching the Application
+
+Run the backend directly:
+
+```powershell
+uvicorn backend.app:app --host 127.0.0.1 --port 8765 --reload
+```
+
+Launch the desktop shell:
+
+```powershell
+python desktop\launcher.py
+```
+
+The backend serves the static frontend and initializes `data\sqlite\depo_pro.db` on startup.
+
+## Project Layout
 
 ```text
 depo_final/
-├── main.py              Desktop launcher
-├── requirements.txt
-├── ui/
-│   ├── index.html       Shell with 6-stage navigation
-│   ├── screens/         One HTML file per stage (Phase A.1)
-│   └── assets/
-│       ├── css/
-│       └── js/
-├── backend/             FastAPI app (Phase B)
+├── backend/
+├── desktop/
+├── frontend/
 ├── data/
-│   └── cases/           Per-case folders
-└── docs/                Architecture, schema, phase notes
+├── docs/
+├── scripts/
+├── tests/
+├── pyproject.toml
+└── README.md
 ```
 
-## Running locally
+## Maintenance Scripts
+
+Run Python formatting and lint fixes:
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
-python main.py
+scripts\cleanup_python.bat
 ```
 
-A native desktop window opens displaying the workspace. Right-click -> Inspect for Chromium DevTools (`debug=True`).
+Run frontend formatting and lint fixes:
 
-## Phase Status
+```powershell
+scripts\cleanup_frontend.bat
+```
 
-- Phase A.0: Project scaffold, desktop shell launches ✓
-- Phase A.1: Screen decomposition + router ✓
-- Phase A.2: Extract shared CSS/JS ✓
-- Phase A.3: Per-screen polish + schema doc ✓ (tag: `phase-a-complete`)
-- Phase B: FastAPI backend + SQLite per `docs/ufm_schema_v1.md`, plus NOD parsing per `docs/nod_parser_spec.md` — next up; first cut wires Stage 1 intake to real case/session create endpoints
-- Phase C: Deepgram, AI cleanup, real DOCX/PDF export
-- Phase D: Word-timing sync, cryptographic certification chain, multi-reviewer workflow
+Run project verification:
 
-See `docs/phase_a_complete.md` for the full done/deferred breakdown.
+```powershell
+scripts\verify_project.bat
+```
+
+Run all maintenance and verification:
+
+```powershell
+scripts\full_maintenance.bat
+```
+
+## Phase 1 Scope
+
+This branch stops at:
+
+- architecture shell
+- frontend shell
+- backend shell
+- SQLite initialization
+- desktop launcher
+- maintenance tooling
+
+It does not include transcription, transcript review, DOCX export, Deepgram integration, AI cleanup, or realtime systems.

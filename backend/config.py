@@ -1,30 +1,27 @@
-"""Centralized configuration for Depo-Pro backend.
-
-Loads environment variables from .env at project root.
-Secrets (API keys) never live in code - only in .env (gitignored).
-"""
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ENV_FILE = PROJECT_ROOT / ".env"
-load_dotenv(ENV_FILE)
+load_dotenv(PROJECT_ROOT / ".env")
 
-# Server
-BACKEND_HOST = os.getenv("DEPOPRO_BACKEND_HOST", "127.0.0.1")
-BACKEND_PORT = int(os.getenv("DEPOPRO_BACKEND_PORT", "47853"))
 
-# Paths
-UI_ROOT = PROJECT_ROOT / "ui"
-DATA_ROOT = PROJECT_ROOT / "data"
-DATA_CASES = DATA_ROOT / "cases"
+@dataclass(frozen=True)
+class Settings:
+    app_name: str = "DEPO-PRO"
+    app_version: str = "0.1"
+    backend_host: str = os.getenv("DEPO_PRO_HOST", "127.0.0.1")
+    backend_port: int = int(os.getenv("DEPO_PRO_PORT", "8765"))
+    debug: bool = os.getenv("DEPO_PRO_DEBUG", "0") == "1"
+    project_root: Path = PROJECT_ROOT
+    frontend_root: Path = PROJECT_ROOT / "frontend"
+    data_root: Path = PROJECT_ROOT / "data"
+    sqlite_root: Path = PROJECT_ROOT / "data" / "sqlite"
+    database_path: Path = PROJECT_ROOT / "data" / "sqlite" / "depo_pro.db"
 
-# Debug
-DEBUG = os.getenv("DEPOPRO_DEBUG", "0") == "1"
 
-# Future-phase keys (intentionally read here so missing-key errors fail fast at startup)
-DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY", "")
+settings = Settings()

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DEPO-PRO</title>
+        <link rel="stylesheet" href="assets/css/theme.css" />
+        <link rel="stylesheet" href="assets/css/layout.css" />
+        <link rel="stylesheet" href="assets/css/workspace.css" />
+        <link rel="stylesheet" href="assets/css/app.css" />
+    </head>
+    <body>
+        <div class="app-shell">
+            <aside class="nav-rail">
+                <div class="brand-block">
+                    <div class="brand-mark">DP</div>
+                    <div>
+                        <p class="eyebrow">Local-first Legal Production</p>
+                        <h1>DEPO-PRO</h1>
+                    </div>
+                </div>
+                <nav id="stageNav" class="stage-nav" aria-label="Pipeline stages"></nav>
+                <section class="rail-panel">
+                    <p class="panel-label">Transcript Layers</p>
+                    <div class="badge-row">
+                        <span class="layer-badge raw">RAW (IMMUTABLE)</span>
+                        <span class="layer-badge working">WORKING (EDITABLE)</span>
+                    </div>
+                    <p class="muted-copy">
+                        Foundation shell only. Transcript workflows and editing arrive in later
+                        phases.
+                    </p>
+                </section>
+            </aside>
+
+            <div class="workspace-shell">
+                <header class="workspace-header">
+                    <div>
+                        <p class="eyebrow">Production Workspace</p>
+                        <h2 id="workspaceTitle">Stage 1: Intake</h2>
+                    </div>
+                    <div class="header-status">
+                        <div class="status-card">
+                            <span class="status-label">Mode</span>
+                            <strong>Desktop Foundation</strong>
+                        </div>
+                        <button
+                            id="themeToggle"
+                            class="theme-toggle"
+                            type="button"
+                            aria-label="Toggle theme"
+                        >
+                            Toggle Theme
+                        </button>
+                    </div>
+                </header>
+
+                <section class="pipeline-shell">
+                    <div class="pipeline-heading">
+                        <span class="panel-label">Pipeline</span>
+                        <span id="pipelineSummary" class="pipeline-summary">1 of 6</span>
+                    </div>
+                    <div id="pipelineIndicator" class="pipeline-indicator" aria-hidden="true"></div>
+                </section>
+
+                <main id="screenRoot" class="screen-root" aria-live="polite"></main>
+            </div>
+        </div>
+
+        <script src="assets/js/state.js"></script>
+        <script src="assets/js/api.js"></script>
+        <script src="assets/js/ui.js"></script>
+        <script src="assets/js/router.js"></script>
+        <script src="assets/js/screens/stage_1.js"></script>
+        <script src="assets/js/screens/stage_2.js"></script>
+        <script src="assets/js/screens/stage_3.js"></script>
+        <script src="assets/js/screens/stage_4.js"></script>
+        <script src="assets/js/screens/stage_5.js"></script>
+        <script src="assets/js/screens/stage_6.js"></script>
+    </body>
+</html>

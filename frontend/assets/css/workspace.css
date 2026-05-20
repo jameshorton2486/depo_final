@@ -1,0 +1,149 @@
+.brand-block,
+.workspace-header,
+.panel-header,
+.header-status,
+.badge-row,
+.pipeline-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.brand-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, var(--accent), #244a85);
+    color: white;
+    box-shadow: var(--shadow);
+}
+
+.stage-nav,
+.pipeline-indicator,
+.placeholder-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.workspace-header,
+.pipeline-shell,
+.content-panel,
+.side-panel,
+.rail-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(16px);
+}
+
+.workspace-header,
+.pipeline-shell,
+.content-panel,
+.side-panel,
+.rail-panel {
+    padding: 20px;
+}
+
+.header-status {
+    justify-content: flex-end;
+}
+
+.status-card {
+    padding: 10px 14px;
+    background: var(--bg-panel);
+    border-radius: 14px;
+    border: 1px solid var(--line);
+}
+
+.stage-button,
+.theme-toggle,
+.chip {
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--text);
+}
+
+.stage-button {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 16px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.stage-button.active {
+    background: linear-gradient(135deg, rgba(78, 164, 255, 0.18), rgba(77, 208, 167, 0.12));
+    border-color: rgba(137, 194, 255, 0.35);
+}
+
+.stage-number,
+.pipeline-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font: 600 0.9rem/1 var(--font-mono);
+    background: var(--bg-muted);
+    color: var(--text-muted);
+}
+
+.stage-button.active .stage-number,
+.pipeline-step.active .pipeline-dot {
+    background: var(--accent);
+    color: white;
+}
+
+.pipeline-indicator {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.pipeline-step {
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.screen-root {
+    min-height: 0;
+}
+
+.content-panel,
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.placeholder-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.placeholder-card {
+    padding: 18px;
+    border-radius: 18px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+}
+
+.placeholder-card.compact {
+    min-height: 0;
+}
+
+.transcript-panel {
+    min-height: 260px;
+}
