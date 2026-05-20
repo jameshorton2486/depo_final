@@ -183,3 +183,61 @@ async function fetchRealtimeStatus(sessionId) {
     }
     return response.json();
 }
+
+async function createReviewAnnotation(payload) {
+    const response = await fetch('/api/review/annotation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Annotation create failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function createReviewObjection(payload) {
+    const response = await fetch('/api/review/objection', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Objection create failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function createReviewExhibitLink(payload) {
+    const response = await fetch('/api/review/exhibit-link', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Exhibit link failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchReviewDashboard(sessionId) {
+    const response = await fetch(`/api/review/${sessionId}/dashboard`);
+    if (!response.ok) {
+        throw new Error(`Review dashboard failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchReviewNavigation(sessionId) {
+    const response = await fetch(`/api/review/${sessionId}/navigation`);
+    if (!response.ok) {
+        throw new Error(`Review navigation failed with ${response.status}`);
+    }
+    return response.json();
+}

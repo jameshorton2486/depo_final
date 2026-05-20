@@ -15,6 +15,16 @@ from backend.export.export_service import (
     export_txt_bundle,
     get_export_history,
 )
+from backend.legal_review import (
+    AnnotationCreate,
+    ExhibitLinkCreate,
+    ObjectionCreate,
+    create_annotation,
+    create_exhibit_link,
+    create_objection,
+    get_navigation_index,
+    get_review_dashboard,
+)
 from backend.realtime.realtime_service import (
     RealtimeStartRequest,
     RealtimeStopRequest,
@@ -150,6 +160,40 @@ async def review_resolve(request: ReviewResolveRequest) -> dict[str, object]:
 @app.get("/api/review/{session_id}/audit")
 async def review_audit(session_id: int) -> dict[str, object]:
     return {"session_id": session_id, "items": list_audit_events(session_id)}
+
+
+@app.post("/api/review/annotation")
+async def review_annotation(request: AnnotationCreate) -> dict[str, object]:
+    try:
+        return create_annotation(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/review/objection")
+async def review_objection(request: ObjectionCreate) -> dict[str, object]:
+    try:
+        return create_objection(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/review/exhibit-link")
+async def review_exhibit_link(request: ExhibitLinkCreate) -> dict[str, object]:
+    try:
+        return create_exhibit_link(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/review/{session_id}/dashboard")
+async def review_dashboard(session_id: int) -> dict[str, object]:
+    return get_review_dashboard(session_id)
+
+
+@app.get("/api/review/{session_id}/navigation")
+async def review_navigation(session_id: int) -> dict[str, object]:
+    return get_navigation_index(session_id)
 
 
 @app.post("/api/export/docx")

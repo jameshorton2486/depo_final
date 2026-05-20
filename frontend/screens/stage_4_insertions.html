@@ -1,23 +1,151 @@
-<section class="stage-layout">
-    <article class="content-panel">
+<section class="stage-layout intake-shell">
+    <article class="content-panel legal-review-shell">
         <div class="panel-header">
             <div>
-                <p class="panel-label">Insertions</p>
-                <h3>Insertion management shell</h3>
+                <p class="panel-label">Legal Review</p>
+                <h3>Advanced exhibit and objection workflow</h3>
             </div>
-            <span class="chip">Placeholder</span>
+            <span class="layer-badge working">Annotation Layer</span>
         </div>
-        <p class="lead">Reserved for later management of corrections, markings, and insertions.</p>
-        <div class="placeholder-card">
-            <h4>Insertion queue</h4>
-            <p>Stage shell only. No transcript mutation tools are implemented in Phase 1.</p>
+        <div class="workspace-control-grid">
+            <label class="field-group">
+                <span class="field-label">Session Id</span>
+                <input id="legalReviewSessionId" class="text-input" type="number" min="1" />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Reviewer</span>
+                <input
+                    id="legalReviewAuthor"
+                    class="text-input"
+                    type="text"
+                    placeholder="Reviewer identity"
+                />
+            </label>
+        </div>
+        <div class="action-row">
+            <button id="legalReviewLoadButton" class="primary-button" type="button">
+                Load Legal Review
+            </button>
+            <span id="legalReviewStatus" class="status-pill" data-state="idle"
+                >Awaiting session</span
+            >
+        </div>
+        <div id="legalReviewDashboardGrid" class="result-grid"></div>
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Transcript Annotation</p>
+                    <h4>Bookmarks, notes, and issue markers</h4>
+                </div>
+            </div>
+            <div class="editable-grid">
+                <label class="field-group">
+                    <span class="field-label">Transcript Block Id</span>
+                    <input id="annotationBlockId" class="text-input" type="number" min="1" />
+                </label>
+                <label class="field-group">
+                    <span class="field-label">Annotation Type</span>
+                    <input id="annotationType" class="text-input" type="text" value="BOOKMARK" />
+                </label>
+            </div>
+            <label class="field-group">
+                <span class="field-label">Annotation Text</span>
+                <textarea id="annotationText" class="text-area"></textarea>
+            </label>
+            <div class="editable-grid">
+                <label class="field-group">
+                    <span class="field-label">Bookmark Label</span>
+                    <input id="annotationBookmarkLabel" class="text-input" type="text" />
+                </label>
+                <label class="field-group">
+                    <span class="field-label">Issue Category</span>
+                    <input
+                        id="annotationIssueCategory"
+                        class="text-input"
+                        type="text"
+                        placeholder="Optional issue category"
+                    />
+                </label>
+            </div>
+            <button id="annotationCreateButton" class="secondary-button" type="button">
+                Add Annotation
+            </button>
+        </div>
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Objection Workflow</p>
+                    <h4>Classify and navigate objections</h4>
+                </div>
+            </div>
+            <div class="editable-grid">
+                <label class="field-group">
+                    <span class="field-label">Objection Block Id</span>
+                    <input id="objectionBlockId" class="text-input" type="number" min="1" />
+                </label>
+                <label class="field-group">
+                    <span class="field-label">Category</span>
+                    <input id="objectionCategory" class="text-input" type="text" value="FORM" />
+                </label>
+            </div>
+            <label class="field-group">
+                <span class="field-label">Objection Text</span>
+                <textarea id="objectionText" class="text-area"></textarea>
+            </label>
+            <button id="objectionCreateButton" class="secondary-button" type="button">
+                Tag Objection
+            </button>
+        </div>
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Exhibit Linking</p>
+                    <h4>Attach exhibits to transcript locations</h4>
+                </div>
+            </div>
+            <div class="editable-grid">
+                <label class="field-group">
+                    <span class="field-label">Exhibit Block Id</span>
+                    <input id="exhibitBlockId" class="text-input" type="number" min="1" />
+                </label>
+                <label class="field-group">
+                    <span class="field-label">Exhibit Label</span>
+                    <input id="exhibitLabel" class="text-input" type="text" value="Exhibit 1" />
+                </label>
+            </div>
+            <label class="field-group">
+                <span class="field-label">Exhibit Description</span>
+                <textarea id="exhibitDescription" class="text-area"></textarea>
+            </label>
+            <button id="exhibitLinkButton" class="secondary-button" type="button">
+                Link Exhibit
+            </button>
         </div>
     </article>
-    <aside class="side-panel">
-        <p class="panel-label">Future Controls</p>
+    <aside class="side-panel legal-review-shell">
         <div class="placeholder-card compact">
-            <h4>Editable layer</h4>
-            <p>Working-layer actions will connect here in later phases.</p>
+            <h4>Navigation</h4>
+            <div id="legalNavigationList" class="stack-list"></div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Annotations</h4>
+            <div id="legalAnnotationsList" class="stack-list"></div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Objections</h4>
+            <div id="legalObjectionsList" class="stack-list"></div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Linked Exhibits</h4>
+            <div id="legalExhibitsList" class="stack-list"></div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Interpreted Segments</h4>
+            <div id="legalInterpretedList" class="stack-list"></div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Issue Dashboard</h4>
+            <div id="legalIssuesList" class="stack-list"></div>
         </div>
     </aside>
 </section>

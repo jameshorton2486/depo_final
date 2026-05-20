@@ -26,6 +26,12 @@ REQUIRED_TABLES = {
     "review_actions",
     "speaker_corrections",
     "transcript_audit_log",
+    "transcript_annotations",
+    "objections",
+    "review_issues",
+    "linked_exhibits",
+    "interpreted_segments",
+    "legal_navigation_index",
 }
 REQUIRED_COLUMNS = {
     "law_firms": {

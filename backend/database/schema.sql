@@ -323,3 +323,101 @@ CREATE TABLE IF NOT EXISTS transcript_audit_log (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS transcript_annotations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    transcript_block_id INTEGER,
+    word_object_id INTEGER,
+    annotation_type TEXT NOT NULL,
+    annotation_text TEXT NOT NULL,
+    bookmark_label TEXT,
+    issue_category TEXT,
+    status TEXT NOT NULL DEFAULT 'open',
+    author TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_object_id) REFERENCES word_objects(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS objections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    transcript_block_id INTEGER NOT NULL,
+    speaker_segment_id INTEGER,
+    category TEXT NOT NULL,
+    objection_text TEXT NOT NULL,
+    colloquy_group TEXT,
+    reviewer TEXT NOT NULL,
+    event_time REAL,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (speaker_segment_id) REFERENCES speaker_segments(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS review_issues (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    transcript_block_id INTEGER,
+    word_object_id INTEGER,
+    review_category TEXT NOT NULL,
+    issue_status TEXT NOT NULL DEFAULT 'open',
+    priority TEXT NOT NULL DEFAULT 'normal',
+    reviewer TEXT,
+    note TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_object_id) REFERENCES word_objects(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS linked_exhibits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    transcript_block_id INTEGER NOT NULL,
+    exhibit_id INTEGER NOT NULL,
+    exhibit_label TEXT NOT NULL,
+    exhibit_description TEXT,
+    event_time REAL,
+    created_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (exhibit_id) REFERENCES exhibits(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS interpreted_segments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    transcript_block_id INTEGER NOT NULL,
+    speaker_segment_id INTEGER,
+    interpreter_label TEXT,
+    source_language TEXT,
+    target_language TEXT,
+    interpreted_text TEXT,
+    created_by TEXT NOT NULL DEFAULT 'system',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (speaker_segment_id) REFERENCES speaker_segments(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS legal_navigation_index (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    nav_type TEXT NOT NULL,
+    nav_label TEXT NOT NULL,
+    transcript_block_id INTEGER,
+    word_object_id INTEGER,
+    reference_id INTEGER,
+    event_time REAL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_object_id) REFERENCES word_objects(id) ON DELETE CASCADE
+);
