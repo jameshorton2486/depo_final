@@ -147,3 +147,66 @@
 .transcript-panel {
     min-height: 260px;
 }
+
+.intake-shell,
+.intake-form-grid,
+.editable-grid,
+.result-grid,
+.intake-results-shell,
+.intake-form-shell {
+    display: grid;
+    gap: 16px;
+}
+
+.intake-shell {
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+}
+
+.intake-form-grid,
+.editable-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.result-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.intake-sidebar,
+.stack-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action-row,
+.summary-row,
+.meta-stack,
+.stack-item {
+    display: flex;
+    gap: 12px;
+}
+
+.action-row,
+.summary-row {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.meta-stack,
+.stack-item {
+    flex-direction: column;
+}
+
+.keyterm-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 1100px) {
+    .intake-shell,
+    .intake-form-grid,
+    .editable-grid {
+        grid-template-columns: 1fr;
+    }
+}

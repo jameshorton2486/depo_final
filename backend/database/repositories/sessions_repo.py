@@ -17,9 +17,17 @@ def create_session(payload: SessionCreate, database_path: Path | None = None) ->
                 start_time,
                 end_time,
                 location,
+                location_type,
+                location_address,
                 deponent_name,
-                officer_name
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                officer_name,
+                ordered_by,
+                service_type,
+                csr_required,
+                source_document,
+                extracted_from,
+                parser_confidence
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 payload.case_id,
@@ -28,8 +36,16 @@ def create_session(payload: SessionCreate, database_path: Path | None = None) ->
                 payload.start_time,
                 payload.end_time,
                 payload.location,
+                payload.location_type,
+                payload.location_address,
                 payload.deponent_name,
                 payload.officer_name,
+                payload.ordered_by,
+                payload.service_type,
+                int(payload.csr_required),
+                payload.source_document,
+                payload.extracted_from,
+                payload.parser_confidence,
             ),
         )
         connection.commit()
@@ -42,3 +58,12 @@ def get_session(session_id: int, database_path: Path | None = None) -> SessionRe
     if row is None:
         raise LookupError(f"Session {session_id} was not found.")
     return SessionRecord.model_validate(dict(row))
+
+
+def list_sessions_for_case(case_id: int, database_path: Path | None = None) -> list[SessionRecord]:
+    with open_connection(database_path) as connection:
+        rows = connection.execute(
+            "SELECT * FROM sessions WHERE case_id = ? ORDER BY id ASC",
+            (case_id,),
+        ).fetchall()
+    return [SessionRecord.model_validate(dict(row)) for row in rows]

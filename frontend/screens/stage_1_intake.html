@@ -3,30 +3,122 @@
         <div class="panel-header">
             <div>
                 <p class="panel-label">Intake</p>
-                <h3>Case setup and source intake</h3>
+                <h3>Intake intelligence and entity extraction</h3>
             </div>
-            <span class="chip">Placeholder</span>
+            <span class="chip">Phase 3 Live</span>
         </div>
         <p class="lead">
-            Intake workflow shell for case metadata, session setup, and source file registration.
+            Parse notices, intake sheets, captions, and scheduling text into structured deposition
+            metadata.
         </p>
-        <div class="placeholder-grid">
-            <div class="placeholder-card">
-                <h4>Case information</h4>
-                <p>Caption, deponent, venue, and production profile will be configured here.</p>
-            </div>
-            <div class="placeholder-card">
-                <h4>Source assets</h4>
-                <p>Audio and transcript asset registration will be added in later phases.</p>
-            </div>
+        <div class="intake-shell">
+            <section class="intake-form-shell">
+                <div class="placeholder-card intake-form-card">
+                    <div class="intake-form-grid">
+                        <label class="field-group">
+                            <span class="field-label">Source Document</span>
+                            <input
+                                id="intakeSourceDocument"
+                                class="text-input"
+                                type="text"
+                                placeholder="Example: Garza NOD.pdf"
+                            />
+                        </label>
+                        <label class="field-group">
+                            <span class="field-label">Case Style Override</span>
+                            <input
+                                id="intakeCaseStyle"
+                                class="text-input"
+                                type="text"
+                                placeholder="Plaintiff v. Defendant"
+                            />
+                        </label>
+                        <label class="field-group">
+                            <span class="field-label">Cause Number Override</span>
+                            <input
+                                id="intakeCauseNumber"
+                                class="text-input"
+                                type="text"
+                                placeholder="25-cv-00598-OLG"
+                            />
+                        </label>
+                        <label class="field-group">
+                            <span class="field-label">Deponent Override</span>
+                            <input
+                                id="intakeDeponentName"
+                                class="text-input"
+                                type="text"
+                                placeholder="Deponent name"
+                            />
+                        </label>
+                    </div>
+                    <label class="field-group">
+                        <span class="field-label">Upload Intake Material</span>
+                        <input
+                            id="intakeFile"
+                            class="file-input"
+                            type="file"
+                            accept=".pdf,.txt,.md,.eml"
+                        />
+                    </label>
+                    <label class="field-group">
+                        <span class="field-label">Pasted Intake Text</span>
+                        <textarea
+                            id="intakePastedText"
+                            class="text-area"
+                            rows="10"
+                            placeholder="Paste NOD text, intake sheet text, caption text, or scheduling email text here."
+                        ></textarea>
+                    </label>
+                    <div class="action-row">
+                        <button id="intakeParseButton" class="primary-button" type="button">
+                            Parse Intake Materials
+                        </button>
+                        <button id="intakeReloadButton" class="secondary-button" type="button">
+                            Reload Persisted Case
+                        </button>
+                        <span id="intakeStatus" class="status-pill">Awaiting intake source</span>
+                    </div>
+                </div>
+                <div id="intakeEditableFields" class="placeholder-card intake-form-card"></div>
+            </section>
+            <section class="intake-results-shell">
+                <div class="placeholder-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="panel-label">Parsed Entities</p>
+                            <h4>Layer 1 + Layer 2 extraction</h4>
+                        </div>
+                        <span id="intakeCaseIdBadge" class="chip neutral">No Case Yet</span>
+                    </div>
+                    <div id="intakeSummaryGrid" class="result-grid"></div>
+                </div>
+                <div class="placeholder-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="panel-label">Speaker Labels</p>
+                            <h4>Diarization mapping preview</h4>
+                        </div>
+                    </div>
+                    <div id="speakerLabelPreview" class="stack-list"></div>
+                </div>
+            </section>
         </div>
     </article>
     <aside class="side-panel">
-        <p class="panel-label">Intake Panel</p>
-        <div class="placeholder-stack">
+        <p class="panel-label">Generated Output</p>
+        <div class="placeholder-stack intake-sidebar">
             <div class="placeholder-card compact">
-                <h4>Stage readiness</h4>
-                <p>Routing, state, and persistence hooks are ready for future intake APIs.</p>
+                <h4>Keyterm Preview</h4>
+                <div id="keytermPreview" class="keyterm-cloud"></div>
+            </div>
+            <div class="placeholder-card compact">
+                <h4>Phonetic Seeds</h4>
+                <div id="phoneticPreview" class="stack-list"></div>
+            </div>
+            <div class="placeholder-card compact">
+                <h4>Provenance</h4>
+                <div id="provenancePreview" class="stack-list"></div>
             </div>
         </div>
     </aside>

@@ -92,3 +92,102 @@ h4 {
 .stage-meta {
     font-size: 0.84rem;
 }
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+}
+
+.text-input,
+.text-area,
+.file-input,
+.primary-button,
+.secondary-button {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--text);
+    font: inherit;
+}
+
+.text-input,
+.file-input,
+.primary-button,
+.secondary-button {
+    padding: 12px 14px;
+}
+
+.text-area {
+    padding: 14px;
+    resize: vertical;
+    min-height: 180px;
+}
+
+.primary-button,
+.secondary-button {
+    width: auto;
+    cursor: pointer;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, var(--accent), #1f4f8f);
+    color: #fff;
+}
+
+.secondary-button,
+.chip.neutral,
+.status-pill,
+.confidence-badge,
+.source-badge,
+.keyterm-pill {
+    background: var(--bg-muted);
+}
+
+.status-pill,
+.confidence-badge,
+.source-badge,
+.keyterm-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+}
+
+.status-pill[data-state='success'] {
+    color: var(--success);
+}
+
+.status-pill[data-state='error'] {
+    color: #ff8d87;
+}
+
+.status-pill[data-state='working'] {
+    color: var(--warning);
+}
+
+.result-card {
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+}
+
+.summary-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.summary-row:last-child {
+    border-bottom: 0;
+}
