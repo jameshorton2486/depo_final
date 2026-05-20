@@ -1,49 +1,55 @@
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 
-from backend.config import settings
+from backend.database.connection import open_connection, resolve_database_path
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS cases (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    case_name TEXT NOT NULL,
-    caption TEXT,
-    status TEXT NOT NULL DEFAULT 'intake',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS sessions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    case_id INTEGER NOT NULL,
-    session_name TEXT NOT NULL,
-    session_date TEXT,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (case_id) REFERENCES cases(id)
-);
-
-CREATE TABLE IF NOT EXISTS transcript_assets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id INTEGER NOT NULL,
-    asset_type TEXT NOT NULL,
-    file_name TEXT NOT NULL,
-    file_path TEXT NOT NULL,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (session_id) REFERENCES sessions(id)
-);
-"""
+SCHEMA_PATH = Path(__file__).with_name("schema.sql")
+REQUIRED_TABLES = {
+    "law_firms",
+    "reporting_firms",
+    "reporting_firm_offices",
+    "cases",
+    "parties",
+    "attorneys",
+    "case_attorneys",
+    "sessions",
+    "transcript_assets",
+    "exhibits",
+    "interpreters",
+    "session_events",
+    "speaker_segments",
+    "transcript_blocks",
+    "word_objects",
+}
 
 
-def get_connection() -> sqlite3.Connection:
-    settings.sqlite_root.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(settings.database_path)
-    connection.execute("PRAGMA foreign_keys = ON;")
-    return connection
+def load_schema() -> str:
+    return SCHEMA_PATH.read_text(encoding="utf-8")
 
 
-def initialize_database() -> Path:
-    with get_connection() as connection:
-        connection.executescript(SCHEMA)
+def initialize_database(database_path: Path | None = None) -> Path:
+    resolved_path = resolve_database_path(database_path)
+    with open_connection(resolved_path) as connection:
+        connection.executescript(load_schema())
         connection.commit()
-    return settings.database_path
+    return resolved_path
+
+
+def get_initialized_tables(database_path: Path | None = None) -> set[str]:
+    with open_connection(database_path) as connection:
+        rows = connection.execute("""
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+            """).fetchall()
+    return {row["name"] for row in rows}
+
+
+def database_status(database_path: Path | None = None) -> dict[str, bool | str]:
+    initialize_database(database_path)
+    tables = get_initialized_tables(database_path)
+    return {
+        "database": "connected",
+        "tables_initialized": REQUIRED_TABLES.issubset(tables),
+    }

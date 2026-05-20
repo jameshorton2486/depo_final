@@ -1,1 +1,1 @@
-"""Database package for DEPO-PRO Phase 1."""
+"""Database package for DEPO-PRO persistence."""

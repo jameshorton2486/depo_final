@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
-from backend.database.init_db import initialize_database
+from backend.database.init_db import database_status, initialize_database
 
 
 @asynccontextmanager
@@ -29,6 +29,11 @@ async def health() -> dict[str, str]:
         "application": settings.app_name,
         "version": settings.app_version,
     }
+
+
+@app.get("/api/db/status")
+async def db_status() -> dict[str, bool | str]:
+    return database_status()
 
 
 app.mount(
