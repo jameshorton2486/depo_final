@@ -97,3 +97,53 @@ async function fetchReviewAudit(sessionId) {
     }
     return response.json();
 }
+
+async function exportTranscriptDocx(payload) {
+    const response = await fetch('/api/export/docx', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`DOCX export failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function exportTranscriptTxt(payload) {
+    const response = await fetch('/api/export/txt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`TXT export failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function exportTranscriptPackage(payload) {
+    const response = await fetch('/api/export/package', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Package export failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchExportHistory(sessionId) {
+    const response = await fetch(`/api/export/${sessionId}/history`);
+    if (!response.ok) {
+        throw new Error(`Export history fetch failed with ${response.status}`);
+    }
+    return response.json();
+}

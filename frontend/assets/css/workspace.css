@@ -226,6 +226,12 @@
     overflow: auto;
 }
 
+.export-files-root,
+.export-history-root {
+    display: grid;
+    gap: 12px;
+}
+
 .transcript-block-card {
     padding: 18px;
     border-radius: 18px;

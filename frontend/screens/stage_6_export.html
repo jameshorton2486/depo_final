@@ -1,28 +1,109 @@
-<section class="stage-layout">
+<section class="stage-layout transcript-shell">
     <article class="content-panel">
         <div class="panel-header">
             <div>
                 <p class="panel-label">Export</p>
-                <h3>Export stage shell</h3>
+                <h3>Deterministic legal transcript rendering</h3>
             </div>
-            <span class="chip">Placeholder</span>
+            <span class="layer-badge working">LAYER 4</span>
         </div>
         <p class="lead">
-            Export destinations, packaging, and delivery flows will be implemented in a later phase.
+            Render read-only export artifacts from canonical transcript truth without altering the
+            underlying testimony.
         </p>
-        <div class="placeholder-card">
-            <h4>Placeholder export panel</h4>
-            <p>
-                DOCX generation and distribution workflows are intentionally not part of this
-                foundation release.
-            </p>
+        <div class="transcript-upload-grid">
+            <label class="field-group">
+                <span class="field-label">Session Id</span>
+                <input
+                    id="exportSessionId"
+                    class="text-input"
+                    type="number"
+                    min="1"
+                    placeholder="Transcript session id"
+                />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Package Label</span>
+                <input
+                    id="exportPackageLabel"
+                    class="text-input"
+                    type="text"
+                    placeholder="Optional export label"
+                />
+            </label>
+        </div>
+        <div class="action-row">
+            <button id="exportDocxButton" class="primary-button" type="button">Export DOCX</button>
+            <button id="exportTxtButton" class="secondary-button" type="button">Export TXT</button>
+            <button id="exportPackageButton" class="secondary-button" type="button">
+                Export Package
+            </button>
+            <span id="exportStatus" class="status-pill" data-state="idle">Awaiting session</span>
+        </div>
+        <div class="transcript-status-grid">
+            <div class="result-card">
+                <h4>Export Options</h4>
+                <div class="stack-list">
+                    <label class="field-group">
+                        <span class="field-label">PDF Foundation</span>
+                        <input id="exportIncludePdf" type="checkbox" />
+                    </label>
+                    <label class="field-group">
+                        <span class="field-label">Include Filler Words</span>
+                        <input id="exportIncludeFillers" type="checkbox" checked />
+                    </label>
+                </div>
+            </div>
+            <div class="result-card">
+                <h4>Package Preview</h4>
+                <div id="exportPreview" class="stack-list">
+                    <div class="stack-item">
+                        <strong>Manifest</strong><span>Not generated</span>
+                    </div>
+                    <div class="stack-item">
+                        <strong>Certificate</strong><span>Not rendered</span>
+                    </div>
+                    <div class="stack-item">
+                        <strong>Exhibit Index</strong><span>Not built</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Latest Export</p>
+                    <h4>Rendered artifact files</h4>
+                </div>
+                <span id="exportHistoryBadge" class="chip neutral">No export history</span>
+            </div>
+            <div id="exportFiles" class="stack-list">
+                <p class="muted-copy">Run an export to populate artifact links.</p>
+            </div>
         </div>
     </article>
     <aside class="side-panel">
-        <p class="panel-label">Delivery</p>
+        <p class="panel-label">History</p>
         <div class="placeholder-card compact">
-            <h4>Output readiness</h4>
-            <p>Export stage routing exists; no real output generation is available yet.</p>
+            <h4>Export History</h4>
+            <div id="exportHistoryList" class="stack-list">
+                <p class="muted-copy">No prior export manifests loaded.</p>
+            </div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Formatting Notes</h4>
+            <div class="stack-list">
+                <div class="stack-item">
+                    <strong>Q./A.</strong><span>Tab + hanging indent</span>
+                </div>
+                <div class="stack-item">
+                    <strong>Colloquy</strong><span>Speaker labels rendered separately</span>
+                </div>
+                <div class="stack-item">
+                    <strong>Certification</strong
+                    ><span>Reporter certificate foundation included</span>
+                </div>
+            </div>
         </div>
     </aside>
 </section>

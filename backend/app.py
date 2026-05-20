@@ -8,6 +8,13 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
 from backend.database.init_db import database_status, initialize_database
+from backend.export.export_service import (
+    ExportRequest,
+    export_docx_bundle,
+    export_package_bundle,
+    export_txt_bundle,
+    get_export_history,
+)
 from backend.review.audit_logger import list_audit_events
 from backend.review.confidence_queue import ensure_review_queue
 from backend.review.correction_engine import resolve_review_action
@@ -135,6 +142,38 @@ async def review_resolve(request: ReviewResolveRequest) -> dict[str, object]:
 @app.get("/api/review/{session_id}/audit")
 async def review_audit(session_id: int) -> dict[str, object]:
     return {"session_id": session_id, "items": list_audit_events(session_id)}
+
+
+@app.post("/api/export/docx")
+async def export_docx(request: ExportRequest) -> dict[str, object]:
+    try:
+        return export_docx_bundle(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/export/txt")
+async def export_txt(request: ExportRequest) -> dict[str, object]:
+    try:
+        return export_txt_bundle(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/export/package")
+async def export_package(request: ExportRequest) -> dict[str, object]:
+    try:
+        return export_package_bundle(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/export/{session_id}/history")
+async def export_history(session_id: int) -> dict[str, object]:
+    try:
+        return get_export_history(session_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 app.mount(
