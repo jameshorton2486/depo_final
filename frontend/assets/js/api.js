@@ -51,3 +51,19 @@ async function fetchTranscript(sessionId) {
     }
     return response.json();
 }
+
+async function fetchTranscriptTimeline(sessionId) {
+    const response = await fetch(`/api/transcript/${sessionId}/timeline`);
+    if (!response.ok) {
+        throw new Error(`Transcript timeline fetch failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchTranscriptWord(sessionId, wordId) {
+    const response = await fetch(`/api/transcript/${sessionId}/word/${wordId}`);
+    if (!response.ok) {
+        throw new Error(`Transcript word fetch failed with ${response.status}`);
+    }
+    return response.json();
+}

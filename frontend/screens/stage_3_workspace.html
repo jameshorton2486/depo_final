@@ -1,33 +1,139 @@
-<section class="stage-layout">
+<section class="stage-layout workspace-review-shell">
     <article class="content-panel">
         <div class="panel-header">
             <div>
                 <p class="panel-label">Workspace</p>
-                <h3>Review workspace shell</h3>
+                <h3>Transcript review workspace</h3>
             </div>
-            <span class="chip">Placeholder</span>
+            <span class="layer-badge raw">RAW IMMUTABLE</span>
         </div>
         <p class="lead">
-            The review workspace is reserved for later transcript alignment and editing workflows.
+            Review the canonical transcript, navigate by speaker and time, and synchronize
+            word-level playback without altering transcript truth.
         </p>
-        <div class="placeholder-grid">
-            <div class="placeholder-card transcript-panel">
-                <h4>Transcript panel</h4>
-                <p>Transcript pages and edit surfaces are intentionally deferred.</p>
+
+        <div class="workspace-control-grid">
+            <label class="field-group">
+                <span class="field-label">Session Id</span>
+                <input
+                    id="workspaceSessionId"
+                    class="text-input"
+                    type="number"
+                    min="1"
+                    placeholder="Persisted session id"
+                />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Search Transcript</span>
+                <input
+                    id="workspaceSearch"
+                    class="text-input"
+                    type="search"
+                    placeholder="Search words, speakers, or text"
+                />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Jump To Time</span>
+                <input
+                    id="workspaceJumpTime"
+                    class="text-input"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="Seconds"
+                />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Jump To Speaker</span>
+                <input
+                    id="workspaceJumpSpeaker"
+                    class="text-input"
+                    type="text"
+                    placeholder="MR. YANG / THE REPORTER"
+                />
+            </label>
+        </div>
+
+        <div class="action-row">
+            <button id="workspaceLoadButton" class="primary-button" type="button">
+                Load Workspace
+            </button>
+            <button id="workspacePrevBlockButton" class="secondary-button" type="button">
+                Previous Block
+            </button>
+            <button id="workspaceNextBlockButton" class="secondary-button" type="button">
+                Next Block
+            </button>
+            <span id="workspaceStatus" class="status-pill" data-state="idle">Awaiting session</span>
+        </div>
+
+        <div class="workspace-player-shell">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Playback</p>
+                    <h4>Word-level synchronized player</h4>
+                </div>
+                <span id="workspaceActiveWordBadge" class="chip neutral">No active word</span>
             </div>
-            <div class="placeholder-card">
-                <h4>Reference tools</h4>
-                <p>
-                    Playback, validation, and cleanup tools are not part of this foundation phase.
-                </p>
+            <div id="workspaceMediaRoot" class="placeholder-card compact">
+                <p>Load a session with a prerecorded asset to enable playback synchronization.</p>
             </div>
         </div>
+
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Timeline Summary</p>
+                    <h4>Confidence + navigation overview</h4>
+                </div>
+                <span id="workspaceSessionBadge" class="chip neutral">No session loaded</span>
+            </div>
+            <div id="workspaceSummaryGrid" class="result-grid"></div>
+        </div>
+
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Transcript Timeline</p>
+                    <h4>Speaker-aware blocks with clickable words</h4>
+                </div>
+                <span class="layer-badge working">REVIEW ONLY</span>
+            </div>
+            <div id="workspaceTranscriptRoot" class="workspace-transcript-root"></div>
+        </div>
     </article>
+
     <aside class="side-panel">
-        <p class="panel-label">Workspace State</p>
+        <p class="panel-label">Low Confidence Review</p>
         <div class="placeholder-card compact">
-            <h4>Routing foundation</h4>
-            <p>Stage state persists locally in the browser shell for future workspace features.</p>
+            <h4>Review candidates</h4>
+            <div id="workspaceReviewCandidates" class="stack-list">
+                <p class="muted-copy">Load a session to identify low-confidence words.</p>
+            </div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Navigation Markers</h4>
+            <div id="workspaceNavigationMeta" class="stack-list">
+                <div class="stack-item"><strong>Current Block</strong><span>None</span></div>
+                <div class="stack-item"><strong>Current Speaker</strong><span>None</span></div>
+                <div class="stack-item"><strong>Search Matches</strong><span>0</span></div>
+            </div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Confidence Legend</h4>
+            <div class="stack-list">
+                <div class="stack-item">
+                    <span class="confidence-chip high">High</span><span>No warning highlight</span>
+                </div>
+                <div class="stack-item">
+                    <span class="confidence-chip medium">Medium</span
+                    ><span>Soft warning highlight</span>
+                </div>
+                <div class="stack-item">
+                    <span class="confidence-chip low">Low</span
+                    ><span>Review candidate highlight</span>
+                </div>
+            </div>
         </div>
     </aside>
 </section>

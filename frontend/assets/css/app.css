@@ -229,3 +229,47 @@ h4 {
     background: rgba(255, 107, 107, 0.16);
     color: #ff8d87;
 }
+
+.transcript-word {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 10px;
+    background: var(--bg-muted);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    transition:
+        background-color 120ms ease,
+        border-color 120ms ease,
+        transform 120ms ease;
+}
+
+.transcript-word:hover {
+    transform: translateY(-1px);
+    border-color: rgba(137, 194, 255, 0.35);
+}
+
+.transcript-word.confidence-high {
+    background: rgba(77, 208, 167, 0.08);
+}
+
+.transcript-word.confidence-medium {
+    background: rgba(240, 179, 95, 0.14);
+}
+
+.transcript-word.confidence-low {
+    background: rgba(255, 107, 107, 0.16);
+    border-color: rgba(255, 141, 135, 0.34);
+}
+
+.transcript-word.review-candidate::after {
+    content: '!';
+    margin-left: 6px;
+    color: #ff8d87;
+    font-weight: 700;
+}
+
+.transcript-word.active {
+    border-color: rgba(137, 194, 255, 0.8);
+    box-shadow: 0 0 0 2px rgba(78, 164, 255, 0.18);
+}

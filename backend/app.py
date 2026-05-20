@@ -3,16 +3,20 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
 from backend.database.init_db import database_status, initialize_database
+from backend.review.transcript_query_service import (
+    get_review_media_path,
+    get_review_timeline,
+    get_review_word,
+)
 from backend.services.intake_service import IntakeParseRequest, get_intake, parse_and_persist
 from backend.transcript.transcript_service import (
     TranscriptionRequest,
     get_transcript,
-    get_transcript_timeline,
-    get_transcript_word,
     transcribe_and_persist,
 )
 
@@ -83,7 +87,7 @@ async def transcript_details(session_id: int) -> dict[str, object]:
 @app.get("/api/transcript/{session_id}/timeline")
 async def transcript_timeline(session_id: int) -> dict[str, object]:
     try:
-        return get_transcript_timeline(session_id)
+        return get_review_timeline(session_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -91,15 +95,18 @@ async def transcript_timeline(session_id: int) -> dict[str, object]:
 @app.get("/api/transcript/{session_id}/word/{word_id}")
 async def transcript_word(session_id: int, word_id: int) -> dict[str, object]:
     try:
-        payload = get_transcript_word(word_id)
+        return get_review_word(session_id, word_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    if int(payload["session_id"]) != session_id:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Word {word_id} was not found in session {session_id}.",
-        )
-    return payload
+
+
+@app.get("/api/transcript/{session_id}/media")
+async def transcript_media(session_id: int) -> FileResponse:
+    try:
+        media_path = get_review_media_path(session_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return FileResponse(path=media_path)
 
 
 app.mount(
