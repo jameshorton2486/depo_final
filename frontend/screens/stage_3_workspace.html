@@ -58,11 +58,23 @@
             <button id="workspaceLoadButton" class="primary-button" type="button">
                 Load Workspace
             </button>
+            <button id="workspacePlayPauseButton" class="secondary-button" type="button">
+                Play / Pause
+            </button>
+            <button id="workspaceSeekBackButton" class="secondary-button" type="button">
+                Seek -5s
+            </button>
+            <button id="workspaceSeekForwardButton" class="secondary-button" type="button">
+                Seek +5s
+            </button>
             <button id="workspacePrevBlockButton" class="secondary-button" type="button">
                 Previous Block
             </button>
             <button id="workspaceNextBlockButton" class="secondary-button" type="button">
                 Next Block
+            </button>
+            <button id="workspaceToggleReviewButton" class="secondary-button" type="button">
+                Toggle Review Panel
             </button>
             <span id="workspaceStatus" class="status-pill" data-state="idle">Awaiting session</span>
         </div>
@@ -115,6 +127,17 @@
         <div class="result-card">
             <div class="panel-header">
                 <div>
+                    <p class="panel-label">System Diagnostics</p>
+                    <h4>Integrity, performance, and recovery readiness</h4>
+                </div>
+                <span id="workspaceSystemBadge" class="chip neutral">Not loaded</span>
+            </div>
+            <div id="workspaceDiagnosticsGrid" class="result-grid"></div>
+        </div>
+
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
                     <p class="panel-label">Transcript Timeline</p>
                     <h4>Speaker-aware blocks with clickable words</h4>
                 </div>
@@ -124,7 +147,7 @@
         </div>
     </article>
 
-    <aside class="side-panel">
+    <aside id="workspaceReviewSidebar" class="side-panel">
         <p class="panel-label">Low Confidence Review</p>
         <div class="placeholder-card compact">
             <h4>Review candidates</h4>
@@ -178,6 +201,20 @@
         <div class="placeholder-card compact">
             <h4>Confidence Legend</h4>
             <div id="workspaceConfidencePanel" class="stack-list"></div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Keyboard Shortcuts</h4>
+            <div class="stack-list">
+                <div class="stack-item"><strong>Space</strong><span>Play / pause</span></div>
+                <div class="stack-item">
+                    <strong>Left / Right</strong><span>Seek 5 seconds</span>
+                </div>
+                <div class="stack-item">
+                    <strong>[ / ]</strong><span>Previous / next flagged word</span>
+                </div>
+                <div class="stack-item"><strong>G</strong><span>Jump to speaker</span></div>
+                <div class="stack-item"><strong>R</strong><span>Toggle review panel</span></div>
+            </div>
         </div>
     </aside>
 </section>

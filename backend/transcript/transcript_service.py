@@ -32,6 +32,7 @@ from backend.deepgram.prerecorded import transcribe_prerecorded
 from backend.deepgram.response_parser import parse_deepgram_response
 from backend.deepgram.transcript_mapper import map_transcript_payload
 from backend.preprocessing.preprocessing_service import preprocess_media
+from backend.system.logging_config import write_log_event
 from backend.transcript.block_builder import build_transcript_block
 from backend.transcript.raw_storage import store_raw_payloads
 from backend.transcript.speaker_builder import build_speaker_segment
@@ -128,6 +129,18 @@ def transcribe_and_persist(
                     database_path,
                 )
             )
+
+    write_log_event(
+        "transcript",
+        "transcript_persisted",
+        payload={
+            "case_id": request.case_id,
+            "session_id": session_record.id,
+            "block_count": len(block_records),
+            "word_count": len(word_records),
+        },
+        data_root=resolved_data_root,
+    )
 
     return {
         "case_id": request.case_id,

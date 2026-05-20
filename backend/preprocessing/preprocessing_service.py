@@ -9,6 +9,7 @@ from backend.preprocessing.ffmpeg_pipeline import normalize_audio, transcode_to_
 from backend.preprocessing.rnnoise import apply_conditional_rnnoise
 from backend.preprocessing.snr_estimation import estimate_snr_db
 from backend.preprocessing.vad_analysis import analyze_vad
+from backend.system.logging_config import write_log_event
 
 
 def preprocess_media(
@@ -61,4 +62,15 @@ def preprocess_media(
     metadata_path = raw_dir / f"{stem}_preprocessing.json"
     metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     metadata["metadata_path"] = str(metadata_path)
+    write_log_event(
+        "preprocessing",
+        "media_preprocessed",
+        payload={
+            "case_id": case_id,
+            "file_name": file_name,
+            "snr_db": round(float(snr_db), 2),
+            "utt_split": round(float(vad_metadata["calibrated_utt_split"]), 2),
+        },
+        data_root=resolved_data_root,
+    )
     return metadata

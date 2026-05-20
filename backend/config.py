@@ -23,6 +23,8 @@ class Settings:
     frontend_root: Path = PROJECT_ROOT / "frontend"
     data_root: Path = PROJECT_ROOT / "data"
     cases_root: Path = PROJECT_ROOT / "data" / "cases"
+    logs_root: Path = PROJECT_ROOT / "data" / "logs"
+    temp_root: Path = PROJECT_ROOT / "data" / "temp"
     sqlite_root: Path = PROJECT_ROOT / "data" / "sqlite"
     database_path: Path = PROJECT_ROOT / "data" / "sqlite" / "depo_pro.db"
 

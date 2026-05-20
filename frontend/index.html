@@ -31,6 +31,17 @@
                         phases.
                     </p>
                 </section>
+                <section class="rail-panel">
+                    <p class="panel-label">System Health</p>
+                    <div class="stack-list">
+                        <span id="systemHealthBadge" class="status-pill" data-state="idle">
+                            Health unknown
+                        </span>
+                        <p id="systemHealthSummary" class="muted-copy">
+                            Diagnostics not loaded yet.
+                        </p>
+                    </div>
+                </section>
             </aside>
 
             <div class="workspace-shell">
@@ -66,6 +77,7 @@
                 <main id="screenRoot" class="screen-root" aria-live="polite"></main>
             </div>
         </div>
+        <div id="notificationToast" class="notification-toast" data-state="idle" hidden></div>
 
         <script src="assets/js/state.js"></script>
         <script src="assets/js/api.js"></script>

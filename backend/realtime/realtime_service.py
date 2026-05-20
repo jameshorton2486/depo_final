@@ -25,6 +25,7 @@ from backend.realtime.stream_persistence import (
 )
 from backend.realtime.websocket_router import WebSocketHub
 from backend.realtime.zoom_rtms import build_zoom_rtms_metadata
+from backend.system.logging_config import write_log_event
 
 
 class RealtimeStartRequest(BaseModel):
@@ -110,6 +111,15 @@ class RealtimeSessionManager:
             database_path=self.database_path,
         )
         state.task = asyncio.create_task(self._run_stream(state))
+        write_log_event(
+            "realtime",
+            "realtime_session_started",
+            payload={
+                "session_id": request.session_id,
+                "mock": request.mock,
+                "source_label": request.source_label,
+            },
+        )
         return self.get_status(request.session_id)
 
     async def stop_session(self, request: RealtimeStopRequest) -> dict[str, object]:
@@ -124,6 +134,11 @@ class RealtimeSessionManager:
             event_time=None,
             details={"reason": request.reason or "manual_stop"},
             database_path=self.database_path,
+        )
+        write_log_event(
+            "realtime",
+            "realtime_session_stopped",
+            payload={"session_id": request.session_id, "reason": request.reason or "manual_stop"},
         )
         return self.get_status(request.session_id)
 

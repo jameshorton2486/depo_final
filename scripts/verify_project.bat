@@ -3,7 +3,7 @@ setlocal
 set PYTHON_BIN=.\.venv\Scripts\python.exe
 
 echo [1/6] Verifying imports...
-%PYTHON_BIN% -c "import backend.app; import backend.parsers.nod_parser; import backend.services.intake_service; import backend.preprocessing.preprocessing_service; import backend.deepgram.prerecorded; import backend.transcript.transcript_service; import backend.review.transcript_query_service; import backend.review.correction_engine; import backend.realtime.realtime_service; import backend.legal_review.review_dashboard; import desktop.launcher"
+%PYTHON_BIN% -c "import backend.app; import backend.parsers.nod_parser; import backend.services.intake_service; import backend.preprocessing.preprocessing_service; import backend.deepgram.prerecorded; import backend.transcript.transcript_service; import backend.review.transcript_query_service; import backend.review.correction_engine; import backend.realtime.realtime_service; import backend.legal_review.review_dashboard; import backend.system.health_monitor; import desktop.launcher"
 if errorlevel 1 exit /b 1
 
 echo [2/6] Verifying SQLite initialization...

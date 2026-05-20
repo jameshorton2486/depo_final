@@ -45,6 +45,7 @@ def main() -> None:
     try:
         time.sleep(2)
         health = _get_json("http://127.0.0.1:8765/api/health")
+        system_health = _get_json("http://127.0.0.1:8765/api/system/health")
         db_status = _get_json("http://127.0.0.1:8765/api/db/status")
         stage1 = urllib.request.urlopen("http://127.0.0.1:8765/screens/stage_1_intake.html").status
         stage2 = urllib.request.urlopen(
@@ -164,6 +165,16 @@ def main() -> None:
         )
         review_dashboard = _get_json(f"http://127.0.0.1:8765/api/review/{session_id}/dashboard")
         review_navigation = _get_json(f"http://127.0.0.1:8765/api/review/{session_id}/navigation")
+        diagnostics = _get_json(
+            f"http://127.0.0.1:8765/api/system/diagnostics?session_id={session_id}"
+        )
+        performance = _get_json(
+            f"http://127.0.0.1:8765/api/system/performance?session_id={session_id}"
+        )
+        recovery_checkpoint = _post_json(
+            "http://127.0.0.1:8765/api/system/recovery",
+            {"action": "checkpoint", "session_id": session_id},
+        )
 
         docx_result = _post_json(
             "http://127.0.0.1:8765/api/export/docx",
@@ -193,6 +204,7 @@ def main() -> None:
         )
 
         assert health["status"] == "ok"
+        assert system_health["status"] in {"ok", "warning"}
         assert db_status["database"] == "connected"
         assert db_status["tables_initialized"] is True
         assert stage1 == 200 and stage2 == 200 and stage3 == 200 and stage4 == 200 and stage6 == 200
@@ -214,6 +226,9 @@ def main() -> None:
         assert review_dashboard["linked_exhibits"]
         assert "interpreted_segments" in review_dashboard
         assert review_navigation["items"]
+        assert diagnostics["startup"]["ok"] is True
+        assert performance["sessions"]
+        assert recovery_checkpoint["result"]["checkpoint_path"].endswith(".json")
         assert any(path.endswith(".docx") for path in docx_result["files"])
         assert any(path.endswith(".txt") for path in txt_result["files"])
         assert any(path.endswith(".zip") for path in package_result["files"])

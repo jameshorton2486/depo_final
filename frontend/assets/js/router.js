@@ -4,6 +4,8 @@ async function loadStage(stageId) {
         screenRoot.innerHTML = '<p>Unknown stage.</p>';
         return;
     }
+    screenRoot.setAttribute('aria-busy', 'true');
+    showNotification(`Loading Stage ${stageId}...`, 'working');
 
     let html = appState.screenCache[stageId];
     if (!html) {
@@ -21,11 +23,13 @@ async function loadStage(stageId) {
     renderStageNav();
     renderPipeline();
     updateWorkspaceHeader();
+    screenRoot.setAttribute('aria-busy', 'false');
 
     const module = SCREEN_MODULES[stageId];
     if (module && typeof module.init === 'function') {
         module.init();
     }
+    showNotification(`Stage ${stageId} ready.`, 'success');
 }
 
 async function bootstrapApp() {
@@ -37,8 +41,11 @@ async function bootstrapApp() {
 
     try {
         await fetchHealth();
+        const systemHealth = await fetchSystemHealth();
+        updateSystemHealthBadge(systemHealth);
     } catch (error) {
         console.error(error);
+        showNotification(error.message, 'error');
     }
 
     await loadStage(appState.currentStage);

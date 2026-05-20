@@ -241,3 +241,49 @@ async function fetchReviewNavigation(sessionId) {
     }
     return response.json();
 }
+
+async function fetchSystemHealth() {
+    const response = await fetch('/api/system/health');
+    if (!response.ok) {
+        throw new Error(`System health failed with ${response.status}`);
+    }
+    const payload = await response.json();
+    appState.systemHealth = payload;
+    return payload;
+}
+
+async function fetchSystemDiagnostics(sessionId = null) {
+    const suffix = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : '';
+    const response = await fetch(`/api/system/diagnostics${suffix}`);
+    if (!response.ok) {
+        throw new Error(`System diagnostics failed with ${response.status}`);
+    }
+    const payload = await response.json();
+    appState.systemDiagnostics = payload;
+    return payload;
+}
+
+async function fetchSystemPerformance(sessionId = null) {
+    const suffix = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : '';
+    const response = await fetch(`/api/system/performance${suffix}`);
+    if (!response.ok) {
+        throw new Error(`System performance failed with ${response.status}`);
+    }
+    const payload = await response.json();
+    appState.systemPerformance = payload;
+    return payload;
+}
+
+async function runSystemRecovery(payload) {
+    const response = await fetch('/api/system/recovery', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`System recovery failed with ${response.status}`);
+    }
+    return response.json();
+}

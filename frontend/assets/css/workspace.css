@@ -318,6 +318,10 @@
     border-bottom: 1px solid var(--line);
 }
 
+.side-panel[data-collapsed='true'] {
+    display: none;
+}
+
 .speaker-attorney {
     border-left: 4px solid var(--accent);
 }

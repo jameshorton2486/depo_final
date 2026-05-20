@@ -43,6 +43,10 @@ from backend.review.transcript_query_service import (
     get_review_word,
 )
 from backend.services.intake_service import IntakeParseRequest, get_intake, parse_and_persist
+from backend.system.diagnostics import get_system_diagnostics
+from backend.system.health_monitor import get_system_health
+from backend.system.performance_metrics import get_performance_metrics
+from backend.system.recovery_manager import RecoveryRequest, run_recovery
 from backend.transcript.transcript_service import (
     TranscriptionRequest,
     get_transcript,
@@ -70,6 +74,31 @@ async def health() -> dict[str, str]:
         "application": settings.app_name,
         "version": settings.app_version,
     }
+
+
+@app.get("/api/system/health")
+async def system_health() -> dict[str, object]:
+    return get_system_health()
+
+
+@app.get("/api/system/diagnostics")
+async def system_diagnostics(session_id: int | None = None) -> dict[str, object]:
+    return get_system_diagnostics(session_id=session_id)
+
+
+@app.get("/api/system/performance")
+async def system_performance(session_id: int | None = None) -> dict[str, object]:
+    return get_performance_metrics(session_id=session_id)
+
+
+@app.post("/api/system/recovery")
+async def system_recovery(request: RecoveryRequest) -> dict[str, object]:
+    try:
+        return run_recovery(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/api/db/status")

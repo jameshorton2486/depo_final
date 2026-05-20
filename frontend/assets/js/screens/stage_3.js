@@ -20,6 +20,11 @@ const workspaceState = {
     activeWordId: null,
     activeBlockId: null,
     searchMatches: [],
+    reviewCandidateWords: [],
+    reviewCandidateIndex: -1,
+    diagnostics: null,
+    performance: null,
+    keyboardBound: false,
 };
 
 function initializeWorkspaceState() {
@@ -52,6 +57,20 @@ function bindWorkspaceEvents() {
     document
         .getElementById('workspaceApplyRuleButton')
         .addEventListener('click', () => resolveSelectedReviewItem('resolve', true));
+    document
+        .getElementById('workspacePlayPauseButton')
+        .addEventListener('click', toggleWorkspacePlayback);
+    document
+        .getElementById('workspaceSeekBackButton')
+        .addEventListener('click', () => seekWorkspacePlayback(-5));
+    document
+        .getElementById('workspaceSeekForwardButton')
+        .addEventListener('click', () => seekWorkspacePlayback(5));
+    document
+        .getElementById('workspaceToggleReviewButton')
+        .addEventListener('click', toggleWorkspaceReviewSidebar);
+    bindWorkspaceKeyboardShortcuts();
+    applyWorkspaceSidebarState();
 }
 
 async function handleWorkspaceLoad() {
@@ -67,11 +86,14 @@ async function handleWorkspaceLoad() {
 
 async function loadWorkspaceTimeline(sessionId) {
     updateWorkspaceStatus(`Loading transcript workspace for session ${sessionId}...`, 'working');
-    const [payload, queuePayload, auditPayload] = await Promise.all([
-        fetchTranscriptTimeline(sessionId),
-        fetchReviewQueue(sessionId),
-        fetchReviewAudit(sessionId),
-    ]);
+    const [payload, queuePayload, auditPayload, diagnosticsPayload, performancePayload] =
+        await Promise.all([
+            fetchTranscriptTimeline(sessionId),
+            fetchReviewQueue(sessionId),
+            fetchReviewAudit(sessionId),
+            fetchSystemDiagnostics(sessionId),
+            fetchSystemPerformance(sessionId),
+        ]);
     appState.currentSessionId = sessionId;
     persistState();
 
@@ -80,6 +102,8 @@ async function loadWorkspaceTimeline(sessionId) {
     workspaceState.asset = payload.asset || null;
     workspaceState.reviewQueue = queuePayload.items || [];
     workspaceState.auditItems = auditPayload.items || [];
+    workspaceState.diagnostics = diagnosticsPayload;
+    workspaceState.performance = performancePayload;
     workspaceState.selectedReviewFlagId = workspaceState.reviewQueue[0]?.id || null;
     workspaceState.activeWordId = null;
     workspaceState.activeBlockId = workspaceState.timeline[0]?.id || null;
@@ -93,9 +117,11 @@ async function loadWorkspaceTimeline(sessionId) {
     renderWorkspaceSpeakerReview();
     renderWorkspaceAuditHistory();
     renderWorkspaceConfidencePanel(payload.confidence_summary || {});
+    renderWorkspaceDiagnostics();
     renderNavigationMeta();
     document.getElementById('workspaceSessionBadge').textContent = `Session ${sessionId}`;
     updateWorkspaceStatus(`Workspace loaded for session ${sessionId}`, 'success');
+    showNotification(`Workspace diagnostics refreshed for session ${sessionId}.`, 'success');
 }
 
 function renderWorkspaceMedia(payload) {
@@ -203,6 +229,33 @@ function renderWorkspaceConfidencePanel(summary) {
         reviewConfidencePanel.render(summary);
 }
 
+function renderWorkspaceDiagnostics() {
+    const diagnostics = workspaceState.diagnostics || {};
+    const integrity = diagnostics.integrity || {};
+    const assets = diagnostics.assets || {};
+    const performanceSession =
+        (workspaceState.performance?.sessions || []).find(
+            (item) => Number(item.session_id) === Number(appState.currentSessionId),
+        ) || null;
+    document.getElementById('workspaceSystemBadge').textContent = integrity.ok
+        ? 'Integrity OK'
+        : `${integrity.issue_count || 0} issues`;
+    document.getElementById('workspaceDiagnosticsGrid').innerHTML = [
+        renderWorkspaceMetric('Integrity Issues', String(integrity.issue_count || 0)),
+        renderWorkspaceMetric('Missing Files', String(assets.missing_file_count || 0)),
+        renderWorkspaceMetric('Corrupted JSON', String(assets.corrupted_json_count || 0)),
+        renderWorkspaceMetric(
+            'Avg Words / Block',
+            String(performanceSession?.average_words_per_block || 0),
+        ),
+        renderWorkspaceMetric('Session Events', String(performanceSession?.event_count || 0)),
+        renderWorkspaceMetric(
+            'Low Confidence Words',
+            String(performanceSession?.low_confidence_words || 0),
+        ),
+    ].join('');
+}
+
 async function handleWordSeek(button) {
     const sessionId = appState.currentSessionId;
     const wordId = Number(button.dataset.wordId);
@@ -214,6 +267,10 @@ async function handleWordSeek(button) {
     renderActivePlaybackState();
     renderNavigationMeta(payload);
     updateWorkspaceStatus(
+        `Seeked to ${transcriptRenderer.formatTimestamp(Number(payload.seek_time || 0))}`,
+        'success',
+    );
+    showNotification(
         `Seeked to ${transcriptRenderer.formatTimestamp(Number(payload.seek_time || 0))}`,
         'success',
     );
@@ -337,6 +394,8 @@ function renderReviewCandidates(blocks) {
                 })),
         )
         .slice(0, 18);
+    workspaceState.reviewCandidateWords = candidates;
+    workspaceState.reviewCandidateIndex = candidates.length ? 0 : -1;
     target.innerHTML = candidates.length
         ? candidates
               .map(
@@ -422,6 +481,7 @@ async function resolveSelectedReviewItem(action, applyDeterministicRules = false
     });
     await loadWorkspaceTimeline(appState.currentSessionId);
     updateWorkspaceStatus(`Review item ${item.id} resolved.`, 'success');
+    showNotification(`Review item ${item.id} resolved.`, 'success');
 }
 
 async function handleSpeakerCorrection() {
@@ -455,6 +515,120 @@ async function handleSpeakerCorrection() {
     });
     await loadWorkspaceTimeline(appState.currentSessionId);
     updateWorkspaceStatus(`Speaker correction applied to review item ${item.id}.`, 'success');
+    showNotification(`Speaker correction applied to item ${item.id}.`, 'success');
+}
+
+function toggleWorkspacePlayback() {
+    const player = document.getElementById('workspaceMediaPlayer');
+    if (!player) {
+        updateWorkspaceStatus('No media player is available for playback controls.', 'error');
+        return;
+    }
+    if (player.paused) {
+        player.play().catch(console.error);
+        showNotification('Playback started.', 'success');
+        return;
+    }
+    player.pause();
+    showNotification('Playback paused.', 'idle');
+}
+
+function seekWorkspacePlayback(deltaSeconds) {
+    const player = document.getElementById('workspaceMediaPlayer');
+    if (!player) {
+        updateWorkspaceStatus('No media player is available for seeking.', 'error');
+        return;
+    }
+    const target = Math.max(0, Number(player.currentTime || 0) + deltaSeconds);
+    transcriptPlaybackSync.seekPlayer(player, target);
+    showNotification(`Seeked to ${transcriptRenderer.formatTimestamp(target)}.`, 'success');
+}
+
+function toggleWorkspaceReviewSidebar() {
+    appState.reviewSidebarCollapsed = !appState.reviewSidebarCollapsed;
+    persistState();
+    applyWorkspaceSidebarState();
+}
+
+function applyWorkspaceSidebarState() {
+    const sidebar = document.getElementById('workspaceReviewSidebar');
+    if (!sidebar) {
+        return;
+    }
+    sidebar.dataset.collapsed = appState.reviewSidebarCollapsed ? 'true' : 'false';
+}
+
+function bindWorkspaceKeyboardShortcuts() {
+    if (workspaceState.keyboardBound) {
+        return;
+    }
+    workspaceState.keyboardBound = true;
+    document.addEventListener('keydown', handleWorkspaceShortcut);
+}
+
+function handleWorkspaceShortcut(event) {
+    const target = event.target;
+    if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+    ) {
+        return;
+    }
+    if (appState.currentStage !== 3) {
+        return;
+    }
+    if (event.code === 'Space') {
+        event.preventDefault();
+        toggleWorkspacePlayback();
+        return;
+    }
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        seekWorkspacePlayback(-5);
+        return;
+    }
+    if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        seekWorkspacePlayback(5);
+        return;
+    }
+    if (event.key === '[') {
+        event.preventDefault();
+        jumpReviewCandidate(-1);
+        return;
+    }
+    if (event.key === ']') {
+        event.preventDefault();
+        jumpReviewCandidate(1);
+        return;
+    }
+    if (event.key.toLowerCase() === 'g') {
+        event.preventDefault();
+        document.getElementById('workspaceJumpSpeaker')?.focus();
+        return;
+    }
+    if (event.key.toLowerCase() === 'r') {
+        event.preventDefault();
+        toggleWorkspaceReviewSidebar();
+    }
+}
+
+function jumpReviewCandidate(direction) {
+    if (!workspaceState.reviewCandidateWords.length) {
+        updateWorkspaceStatus('No flagged words are available in the current view.', 'idle');
+        return;
+    }
+    workspaceState.reviewCandidateIndex =
+        (workspaceState.reviewCandidateIndex +
+            direction +
+            workspaceState.reviewCandidateWords.length) %
+        workspaceState.reviewCandidateWords.length;
+    const candidate = workspaceState.reviewCandidateWords[workspaceState.reviewCandidateIndex];
+    const button = document.querySelector(`[data-word-id="${String(candidate.word.id)}"]`);
+    if (button) {
+        button.click();
+    }
 }
 
 function updateWorkspaceStatus(message, state) {

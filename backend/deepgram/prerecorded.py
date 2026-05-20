@@ -10,6 +10,7 @@ import soundfile as sf
 from backend.config import settings
 from backend.deepgram.keyterm_loader import load_case_prompting
 from backend.deepgram.request_builder import build_prerecorded_request_url
+from backend.system.logging_config import write_log_event
 
 
 def transcribe_prerecorded(
@@ -21,6 +22,7 @@ def transcribe_prerecorded(
     mock: bool | None = None,
 ) -> dict[str, object]:
     prompting = load_case_prompting(case_id, data_root=data_root)
+    resolved_data_root = data_root if data_root is not None else settings.data_root
     should_mock = settings.transcribe_mock if mock is None else mock
     request_metadata = {
         "model": "nova-3",
@@ -34,6 +36,17 @@ def transcribe_prerecorded(
         "keyterms_path": prompting["keyterms_path"],
         "phonetics_path": prompting["phonetics_path"],
     }
+    write_log_event(
+        "deepgram",
+        "prerecorded_request",
+        payload={
+            "case_id": case_id,
+            "mock": should_mock,
+            "utt_split": round(float(utt_split), 2),
+            "prompted_terms": len(prompting["prompted_terms"]),
+        },
+        data_root=resolved_data_root,
+    )
     if should_mock:
         return _mock_response(audio_path, request_metadata)
     if not settings.deepgram_api_key:

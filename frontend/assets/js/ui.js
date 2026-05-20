@@ -50,3 +50,35 @@ function updateWorkspaceHeader() {
 function bindGlobalUi() {
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 }
+
+function updateSystemHealthBadge(payload = null) {
+    const badge = document.getElementById('systemHealthBadge');
+    const summary = document.getElementById('systemHealthSummary');
+    if (!badge || !summary) {
+        return;
+    }
+    if (!payload) {
+        badge.textContent = 'Health unknown';
+        badge.dataset.state = 'idle';
+        summary.textContent = 'Diagnostics not loaded yet.';
+        return;
+    }
+    badge.textContent = payload.status === 'ok' ? 'System healthy' : 'Needs review';
+    badge.dataset.state = payload.status === 'ok' ? 'success' : 'working';
+    summary.textContent = `${payload.session_count || 0} sessions scanned, ${payload.integrity_issue_count || 0} integrity issues.`;
+}
+
+function showNotification(message, state = 'idle') {
+    const root = document.getElementById('notificationToast');
+    if (!root) {
+        return;
+    }
+    appState.notification = { message, state };
+    root.textContent = message;
+    root.dataset.state = state;
+    root.hidden = false;
+    window.clearTimeout(showNotification.timeoutId);
+    showNotification.timeoutId = window.setTimeout(() => {
+        root.hidden = true;
+    }, 3200);
+}

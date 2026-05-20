@@ -34,8 +34,13 @@ const appState = {
     realtimeMeetingId: window.localStorage.getItem('depo-pro-realtime-meeting-id') || '',
     workspaceSearch: window.localStorage.getItem('depo-pro-workspace-search') || '',
     workspaceReviewer: window.localStorage.getItem('depo-pro-workspace-reviewer') || '',
+    reviewSidebarCollapsed: window.localStorage.getItem('depo-pro-review-sidebar') === '1',
     screenCache: {},
     health: null,
+    systemHealth: null,
+    systemDiagnostics: null,
+    systemPerformance: null,
+    notification: null,
 };
 
 function persistState() {
@@ -50,4 +55,8 @@ function persistState() {
     window.localStorage.setItem('depo-pro-realtime-meeting-id', appState.realtimeMeetingId || '');
     window.localStorage.setItem('depo-pro-workspace-search', appState.workspaceSearch || '');
     window.localStorage.setItem('depo-pro-workspace-reviewer', appState.workspaceReviewer || '');
+    window.localStorage.setItem(
+        'depo-pro-review-sidebar',
+        appState.reviewSidebarCollapsed ? '1' : '0',
+    );
 }

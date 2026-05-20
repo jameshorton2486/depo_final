@@ -180,6 +180,19 @@ h4 {
     color: var(--text-muted);
 }
 
+.notification-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    max-width: min(420px, calc(100vw - 32px));
+    z-index: 40;
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    box-shadow: var(--shadow);
+}
+
 .result-card {
     padding: 16px;
     border-radius: 18px;

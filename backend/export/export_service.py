@@ -19,6 +19,7 @@ from backend.export.pdf_exporter import write_pdf_foundation
 from backend.export.transcript_renderer import render_transcript_document
 from backend.export.txt_exporter import write_txt_export
 from backend.review.audit_logger import list_audit_events
+from backend.system.logging_config import write_log_event
 
 
 class ExportRequest(BaseModel):
@@ -174,6 +175,15 @@ def _finalize_export(
     )
     manifest_path = Path(bundle["export_root"]) / "export_manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    write_log_event(
+        "export",
+        f"export_completed:{export_type}",
+        payload={
+            "session_id": int(bundle["session_record"].id),
+            "file_count": len(exported_files) + 1,
+            "page_count": manifest["transcript_metadata"]["page_count"],
+        },
+    )
     return {
         "session_id": int(bundle["session_record"].id),
         "case_id": int(bundle["case_record"].id),
