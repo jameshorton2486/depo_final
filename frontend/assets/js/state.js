@@ -39,6 +39,13 @@ const appState = {
     intakeCases: [],
     currentCaseState: null,
     transcriptLayerState: null,
+    panelCollapse: (() => {
+        try {
+            return JSON.parse(window.localStorage.getItem('depo-pro-panel-collapse') || '{}');
+        } catch (_error) {
+            return {};
+        }
+    })(),
     screenCache: {},
     health: null,
     systemHealth: null,
@@ -64,4 +71,8 @@ function persistState() {
         appState.reviewSidebarCollapsed ? '1' : '0',
     );
     window.localStorage.setItem('depo-pro-case-stage', String(appState.currentCaseStage || 1));
+    window.localStorage.setItem(
+        'depo-pro-panel-collapse',
+        JSON.stringify(appState.panelCollapse || {}),
+    );
 }

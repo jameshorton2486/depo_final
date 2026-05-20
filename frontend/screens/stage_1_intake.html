@@ -107,58 +107,140 @@
                 <div id="intakeEditableFields" class="placeholder-card intake-form-card"></div>
             </section>
             <section class="intake-results-shell">
-                <div class="placeholder-card">
-                    <div class="panel-header">
-                        <div>
-                            <p class="panel-label">Parsed Entities</p>
-                            <h4>Layer 1 + Layer 2 extraction</h4>
-                        </div>
-                        <span id="intakeCaseIdBadge" class="chip neutral">No Case Yet</span>
-                    </div>
-                    <div id="intakeSummaryGrid" class="result-grid"></div>
-                </div>
-                <div class="placeholder-card">
-                    <div class="panel-header">
-                        <div>
-                            <p class="panel-label">Speaker Labels</p>
-                            <h4>Diarization mapping preview</h4>
-                        </div>
-                    </div>
-                    <div id="speakerLabelPreview" class="stack-list"></div>
-                </div>
-                <div class="placeholder-card">
-                    <div class="panel-header">
-                        <div>
-                            <p class="panel-label">Case State</p>
-                            <h4>Pipeline + persistence state</h4>
-                        </div>
-                    </div>
-                    <div id="intakeCaseStateGrid" class="result-grid"></div>
-                </div>
+                <section
+                    class="collapsible-panel empty"
+                    data-panel-id="parsed-entities"
+                    data-collapsed="false"
+                >
+                    <button
+                        type="button"
+                        class="panel-toggle"
+                        aria-expanded="true"
+                        aria-controls="intakeSummaryGrid"
+                    >
+                        <span class="panel-chevron" aria-hidden="true">&#9662;</span>
+                        <span class="panel-label">Parsed Entities</span>
+                        <span class="panel-title">Layer 1 + Layer 2 extraction</span>
+                        <span
+                            id="intakeCaseIdBadge"
+                            class="panel-count"
+                            data-panel-count
+                            data-state="zero"
+                            >0</span
+                        >
+                    </button>
+                    <div
+                        id="intakeSummaryGrid"
+                        class="panel-content scrollable-panel-body tall"
+                    ></div>
+                </section>
+                <section
+                    class="collapsible-panel empty"
+                    data-panel-id="speaker-labels"
+                    data-collapsed="false"
+                >
+                    <button
+                        type="button"
+                        class="panel-toggle"
+                        aria-expanded="true"
+                        aria-controls="speakerLabelPreview"
+                    >
+                        <span class="panel-chevron" aria-hidden="true">&#9662;</span>
+                        <span class="panel-label">Speaker Labels</span>
+                        <span class="panel-title">Diarization mapping</span>
+                        <span class="panel-count" data-panel-count data-state="zero">0</span>
+                    </button>
+                    <div
+                        id="speakerLabelPreview"
+                        class="panel-content scrollable-panel-body compact-chip-row"
+                    ></div>
+                </section>
+                <section
+                    class="collapsible-panel empty"
+                    data-panel-id="case-state"
+                    data-collapsed="false"
+                >
+                    <button
+                        type="button"
+                        class="panel-toggle"
+                        aria-expanded="true"
+                        aria-controls="intakeCaseStateGrid"
+                    >
+                        <span class="panel-chevron" aria-hidden="true">&#9662;</span>
+                        <span class="panel-label">Case State</span>
+                        <span class="panel-title">Pipeline + persistence</span>
+                        <span class="panel-count" data-panel-count data-state="zero">0</span>
+                    </button>
+                    <div id="intakeCaseStateGrid" class="panel-content"></div>
+                </section>
             </section>
         </div>
     </article>
     <aside class="side-panel">
         <p class="panel-label">Generated Output</p>
         <div class="placeholder-stack intake-sidebar">
-            <div class="placeholder-card compact">
-                <div class="panel-header">
-                    <h4>Keyterm Preview</h4>
-                    <select id="keytermSort" class="text-input">
-                        <option value="weight">Sort by boost</option>
-                        <option value="category">Sort by category</option>
-                    </select>
+            <section
+                class="collapsible-panel empty"
+                data-panel-id="keyterm-preview"
+                data-collapsed="false"
+            >
+                <button
+                    type="button"
+                    class="panel-toggle"
+                    aria-expanded="true"
+                    aria-controls="keytermPreview"
+                >
+                    <span class="panel-chevron" aria-hidden="true">&#9662;</span>
+                    <span class="panel-label">Keyterm Preview</span>
+                    <span class="panel-title">Boost-ranked</span>
+                    <span class="panel-count" data-panel-count data-state="zero">0</span>
+                </button>
+                <div class="panel-content">
+                    <div class="action-row" style="margin-bottom: 8px">
+                        <select id="keytermSort" class="text-input">
+                            <option value="weight">Sort by boost</option>
+                            <option value="category">Sort by category</option>
+                        </select>
+                    </div>
+                    <div id="keytermPreview" class="keyterm-cloud scrollable-panel-body"></div>
                 </div>
-                <div id="keytermPreview" class="keyterm-cloud"></div>
-            </div>
-            <div class="placeholder-card compact">
-                <h4>Phonetic Seeds</h4>
-                <div id="phoneticPreview" class="stack-list"></div>
-            </div>
-            <div class="placeholder-card compact">
-                <h4>Provenance</h4>
-                <div id="provenancePreview" class="stack-list"></div>
-            </div>
+            </section>
+            <section
+                class="collapsible-panel empty"
+                data-panel-id="phonetic-seeds"
+                data-collapsed="false"
+            >
+                <button
+                    type="button"
+                    class="panel-toggle"
+                    aria-expanded="true"
+                    aria-controls="phoneticPreview"
+                >
+                    <span class="panel-chevron" aria-hidden="true">&#9662;</span>
+                    <span class="panel-label">Phonetic Seeds</span>
+                    <span class="panel-title">Pronunciation hints</span>
+                    <span class="panel-count" data-panel-count data-state="zero">0</span>
+                </button>
+                <div id="phoneticPreview" class="panel-content scrollable-panel-body"></div>
+            </section>
+            <section
+                class="collapsible-panel empty"
+                data-panel-id="provenance"
+                data-collapsed="false"
+            >
+                <button
+                    type="button"
+                    class="panel-toggle"
+                    aria-expanded="true"
+                    aria-controls="provenancePreview"
+                >
+                    <span class="panel-chevron" aria-hidden="true">&#9662;</span>
+                    <span class="panel-label">Provenance</span>
+                    <span class="panel-title">Source + confidence</span>
+                    <span class="panel-count" data-panel-count data-state="zero">0</span>
+                </button>
+                <div id="provenancePreview" class="panel-content scrollable-panel-body"></div>
+            </section>
         </div>
     </aside>
 </section>
