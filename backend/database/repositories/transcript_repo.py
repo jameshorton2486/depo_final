@@ -201,6 +201,7 @@ def get_word_object(
                 transcript_blocks.session_id,
                 transcript_blocks.block_type,
                 transcript_blocks.speaker_index,
+                transcript_blocks.speaker_segment_id,
                 speaker_segments.speaker_label
             FROM word_objects
             INNER JOIN transcript_blocks
@@ -271,3 +272,81 @@ def get_timeline_for_session(
         payload["words"] = words_by_block.get(int(payload["id"]), [])
         timeline.append(TranscriptTimelineBlock.model_validate(payload))
     return timeline
+
+
+def update_word_modified_text(
+    word_id: int,
+    modified_text: str | None,
+    database_path: Path | None = None,
+) -> WordObjectRecord:
+    with open_connection(database_path) as connection:
+        connection.execute(
+            "UPDATE word_objects SET modified_text = ? WHERE id = ?",
+            (modified_text, word_id),
+        )
+        connection.commit()
+        row = connection.execute("SELECT * FROM word_objects WHERE id = ?", (word_id,)).fetchone()
+    if row is None:
+        raise LookupError(f"Word {word_id} was not found.")
+    return WordObjectRecord.model_validate(dict(row))
+
+
+def rebuild_block_working_text(
+    transcript_block_id: int,
+    database_path: Path | None = None,
+) -> TranscriptBlockRecord:
+    with open_connection(database_path) as connection:
+        words = connection.execute(
+            """
+            SELECT word_text, modified_text
+            FROM word_objects
+            WHERE transcript_block_id = ?
+            ORDER BY word_index ASC, id ASC
+            """,
+            (transcript_block_id,),
+        ).fetchall()
+        if not words:
+            raise LookupError(f"Transcript block {transcript_block_id} was not found.")
+        working_text = " ".join(
+            str(word["modified_text"] or word["word_text"]).strip() for word in words
+        ).strip()
+        connection.execute(
+            """
+            UPDATE transcript_blocks
+            SET working_text = ?, is_edited = ?, confidence = confidence
+            WHERE id = ?
+            """,
+            (working_text or None, int(bool(working_text)), transcript_block_id),
+        )
+        connection.commit()
+        row = connection.execute(
+            "SELECT * FROM transcript_blocks WHERE id = ?",
+            (transcript_block_id,),
+        ).fetchone()
+    if row is None:
+        raise LookupError(f"Transcript block {transcript_block_id} was not found.")
+    return TranscriptBlockRecord.model_validate(dict(row))
+
+
+def update_block_working_text(
+    transcript_block_id: int,
+    working_text: str | None,
+    database_path: Path | None = None,
+) -> TranscriptBlockRecord:
+    with open_connection(database_path) as connection:
+        connection.execute(
+            """
+            UPDATE transcript_blocks
+            SET working_text = ?, is_edited = ?
+            WHERE id = ?
+            """,
+            (working_text, int(bool(working_text)), transcript_block_id),
+        )
+        connection.commit()
+        row = connection.execute(
+            "SELECT * FROM transcript_blocks WHERE id = ?",
+            (transcript_block_id,),
+        ).fetchone()
+    if row is None:
+        raise LookupError(f"Transcript block {transcript_block_id} was not found.")
+    return TranscriptBlockRecord.model_validate(dict(row))

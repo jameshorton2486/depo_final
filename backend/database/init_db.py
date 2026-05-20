@@ -21,6 +21,11 @@ REQUIRED_TABLES = {
     "speaker_segments",
     "transcript_blocks",
     "word_objects",
+    "review_sessions",
+    "review_flags",
+    "review_actions",
+    "speaker_corrections",
+    "transcript_audit_log",
 }
 REQUIRED_COLUMNS = {
     "law_firms": {

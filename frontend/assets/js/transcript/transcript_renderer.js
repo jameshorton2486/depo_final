@@ -24,6 +24,7 @@
                 context.speaker_label,
             );
             const escapeHtml = globalScope.escapeHtml || fallbackEscape;
+            const displayText = word.display_text || word.modified_text || word.word_text;
             return `
                 <button
                     class="transcript-word confidence-${confidence} speaker-word-${speakerRole}${word.review_candidate ? ' review-candidate' : ''}"
@@ -35,7 +36,7 @@
                     data-confidence-class="${confidence}"
                     title="${escapeHtml(this.formatTimestamp(word.start_time))}"
                 >
-                    ${escapeHtml(word.word_text)}
+                    ${escapeHtml(displayText)}
                 </button>
             `;
         },

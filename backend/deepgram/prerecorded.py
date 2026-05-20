@@ -80,15 +80,15 @@ def _mock_response(audio_path: Path, request_metadata: dict[str, object]) -> dic
         {
             "start": min(duration, 2.6),
             "end": min(duration, 4.9),
-            "confidence": 0.944,
+            "confidence": 0.844,
             "speaker": 1,
             "transcript": "My name is Heath Thomas.",
             "words": [
                 _word("My", 2.6, 2.74, 1, 0.96),
                 _word("name", 2.75, 2.96, 1, 0.95),
                 _word("is", 2.97, 3.08, 1, 0.95),
-                _word("Heath", 3.09, 3.42, 1, 0.9),
-                _word("Thomas.", 3.43, 3.89, 1, 0.91),
+                _word("Heath", 3.09, 3.42, 1, 0.82),
+                _word("Thomas.", 3.43, 3.89, 1, 0.83),
             ],
         },
         {

@@ -8,6 +8,10 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
 from backend.database.init_db import database_status, initialize_database
+from backend.review.audit_logger import list_audit_events
+from backend.review.confidence_queue import ensure_review_queue
+from backend.review.correction_engine import resolve_review_action
+from backend.review.review_state import ReviewResolveRequest
 from backend.review.transcript_query_service import (
     get_review_media_path,
     get_review_timeline,
@@ -107,6 +111,30 @@ async def transcript_media(session_id: int) -> FileResponse:
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return FileResponse(path=media_path)
+
+
+@app.get("/api/review/{session_id}/queue")
+async def review_queue(session_id: int) -> dict[str, object]:
+    try:
+        queue = ensure_review_queue(session_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {"session_id": session_id, "items": queue}
+
+
+@app.post("/api/review/resolve")
+async def review_resolve(request: ReviewResolveRequest) -> dict[str, object]:
+    try:
+        return resolve_review_action(request)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/review/{session_id}/audit")
+async def review_audit(session_id: int) -> dict[str, object]:
+    return {"session_id": session_id, "items": list_audit_events(session_id)}
 
 
 app.mount(

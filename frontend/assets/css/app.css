@@ -273,3 +273,9 @@ h4 {
     border-color: rgba(137, 194, 255, 0.8);
     box-shadow: 0 0 0 2px rgba(78, 164, 255, 0.18);
 }
+
+.badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}

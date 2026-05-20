@@ -278,6 +278,35 @@
     cursor: pointer;
 }
 
+.review-queue-item {
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    background: var(--bg-panel);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.issue-flag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.76rem;
+    background: var(--bg-muted);
+    border: 1px solid var(--line);
+}
+
+.audit-row {
+    display: grid;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+}
+
 .speaker-attorney {
     border-left: 4px solid var(--accent);
 }

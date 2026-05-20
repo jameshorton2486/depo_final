@@ -31,6 +31,7 @@ const appState = {
     currentCaseId: Number(window.localStorage.getItem('depo-pro-case-id') || 0),
     currentSessionId: Number(window.localStorage.getItem('depo-pro-session-id') || 0),
     workspaceSearch: window.localStorage.getItem('depo-pro-workspace-search') || '',
+    workspaceReviewer: window.localStorage.getItem('depo-pro-workspace-reviewer') || '',
     screenCache: {},
     health: null,
 };
@@ -41,4 +42,5 @@ function persistState() {
     window.localStorage.setItem('depo-pro-case-id', String(appState.currentCaseId || 0));
     window.localStorage.setItem('depo-pro-session-id', String(appState.currentSessionId || 0));
     window.localStorage.setItem('depo-pro-workspace-search', appState.workspaceSearch || '');
+    window.localStorage.setItem('depo-pro-workspace-reviewer', appState.workspaceReviewer || '');
 }

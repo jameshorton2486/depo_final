@@ -67,6 +67,27 @@
             <span id="workspaceStatus" class="status-pill" data-state="idle">Awaiting session</span>
         </div>
 
+        <div class="workspace-control-grid">
+            <label class="field-group">
+                <span class="field-label">Reviewer</span>
+                <input
+                    id="workspaceReviewer"
+                    class="text-input"
+                    type="text"
+                    placeholder="Reviewer identity"
+                />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Reviewer Note</span>
+                <input
+                    id="workspaceReviewerNote"
+                    class="text-input"
+                    type="text"
+                    placeholder="Optional review note"
+                />
+            </label>
+        </div>
+
         <div class="workspace-player-shell">
             <div class="panel-header">
                 <div>
@@ -112,6 +133,35 @@
             </div>
         </div>
         <div class="placeholder-card compact">
+            <h4>Review Queue</h4>
+            <div id="workspaceReviewQueue" class="stack-list">
+                <p class="muted-copy">Review queue will populate after workspace load.</p>
+            </div>
+            <div class="action-row">
+                <button id="workspaceResolveAcceptButton" class="secondary-button" type="button">
+                    Accept
+                </button>
+                <button id="workspaceResolveRejectButton" class="secondary-button" type="button">
+                    Reject
+                </button>
+                <button id="workspaceResolveReviewedButton" class="secondary-button" type="button">
+                    Mark Reviewed
+                </button>
+                <button id="workspaceApplyRuleButton" class="primary-button" type="button">
+                    Apply Rule
+                </button>
+            </div>
+            <div id="workspaceSelectedReviewItem" class="stack-list">
+                <p class="muted-copy">No review item selected.</p>
+            </div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Speaker Correction</h4>
+            <div id="workspaceSpeakerReview" class="stack-list">
+                <p class="muted-copy">Select a queue item to edit speaker metadata.</p>
+            </div>
+        </div>
+        <div class="placeholder-card compact">
             <h4>Navigation Markers</h4>
             <div id="workspaceNavigationMeta" class="stack-list">
                 <div class="stack-item"><strong>Current Block</strong><span>None</span></div>
@@ -120,20 +170,14 @@
             </div>
         </div>
         <div class="placeholder-card compact">
-            <h4>Confidence Legend</h4>
-            <div class="stack-list">
-                <div class="stack-item">
-                    <span class="confidence-chip high">High</span><span>No warning highlight</span>
-                </div>
-                <div class="stack-item">
-                    <span class="confidence-chip medium">Medium</span
-                    ><span>Soft warning highlight</span>
-                </div>
-                <div class="stack-item">
-                    <span class="confidence-chip low">Low</span
-                    ><span>Review candidate highlight</span>
-                </div>
+            <h4>Audit History</h4>
+            <div id="workspaceAuditHistory" class="stack-list">
+                <p class="muted-copy">Audit history will appear after review activity.</p>
             </div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Confidence Legend</h4>
+            <div id="workspaceConfidencePanel" class="stack-list"></div>
         </div>
     </aside>
 </section>

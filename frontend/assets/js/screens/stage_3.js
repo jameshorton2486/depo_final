@@ -14,6 +14,9 @@ const workspaceState = {
     timeline: [],
     playback: null,
     asset: null,
+    reviewQueue: [],
+    auditItems: [],
+    selectedReviewFlagId: null,
     activeWordId: null,
     activeBlockId: null,
     searchMatches: [],
@@ -22,6 +25,7 @@ const workspaceState = {
 function initializeWorkspaceState() {
     document.getElementById('workspaceSessionId').value = appState.currentSessionId || '';
     document.getElementById('workspaceSearch').value = appState.workspaceSearch || '';
+    document.getElementById('workspaceReviewer').value = appState.workspaceReviewer || '';
 }
 
 function bindWorkspaceEvents() {
@@ -35,6 +39,19 @@ function bindWorkspaceEvents() {
     document.getElementById('workspaceSearch').addEventListener('input', handleWorkspaceSearch);
     document.getElementById('workspaceJumpTime').addEventListener('change', handleJumpToTime);
     document.getElementById('workspaceJumpSpeaker').addEventListener('change', handleJumpToSpeaker);
+    document.getElementById('workspaceReviewer').addEventListener('input', handleReviewerChange);
+    document
+        .getElementById('workspaceResolveAcceptButton')
+        .addEventListener('click', () => resolveSelectedReviewItem('accept'));
+    document
+        .getElementById('workspaceResolveRejectButton')
+        .addEventListener('click', () => resolveSelectedReviewItem('reject'));
+    document
+        .getElementById('workspaceResolveReviewedButton')
+        .addEventListener('click', () => resolveSelectedReviewItem('mark_reviewed'));
+    document
+        .getElementById('workspaceApplyRuleButton')
+        .addEventListener('click', () => resolveSelectedReviewItem('resolve', true));
 }
 
 async function handleWorkspaceLoad() {
@@ -50,13 +67,20 @@ async function handleWorkspaceLoad() {
 
 async function loadWorkspaceTimeline(sessionId) {
     updateWorkspaceStatus(`Loading transcript workspace for session ${sessionId}...`, 'working');
-    const payload = await fetchTranscriptTimeline(sessionId);
+    const [payload, queuePayload, auditPayload] = await Promise.all([
+        fetchTranscriptTimeline(sessionId),
+        fetchReviewQueue(sessionId),
+        fetchReviewAudit(sessionId),
+    ]);
     appState.currentSessionId = sessionId;
     persistState();
 
     workspaceState.timeline = payload.timeline || [];
     workspaceState.playback = payload.playback || null;
     workspaceState.asset = payload.asset || null;
+    workspaceState.reviewQueue = queuePayload.items || [];
+    workspaceState.auditItems = auditPayload.items || [];
+    workspaceState.selectedReviewFlagId = workspaceState.reviewQueue[0]?.id || null;
     workspaceState.activeWordId = null;
     workspaceState.activeBlockId = workspaceState.timeline[0]?.id || null;
 
@@ -64,6 +88,11 @@ async function loadWorkspaceTimeline(sessionId) {
     renderWorkspaceSummary(payload);
     renderWorkspaceTranscript(payload.timeline || []);
     renderReviewCandidates(payload.timeline || []);
+    renderWorkspaceReviewQueue();
+    renderWorkspaceSelectedReviewItem();
+    renderWorkspaceSpeakerReview();
+    renderWorkspaceAuditHistory();
+    renderWorkspaceConfidencePanel(payload.confidence_summary || {});
     renderNavigationMeta();
     document.getElementById('workspaceSessionBadge').textContent = `Session ${sessionId}`;
     updateWorkspaceStatus(`Workspace loaded for session ${sessionId}`, 'success');
@@ -128,6 +157,50 @@ function renderWorkspaceTranscript(blocks) {
     target.querySelectorAll('[data-word-id]').forEach((button) => {
         button.addEventListener('click', () => handleWordSeek(button));
     });
+}
+
+function renderWorkspaceReviewQueue() {
+    const target = document.getElementById('workspaceReviewQueue');
+    target.innerHTML = reviewQueue.render(workspaceState.reviewQueue);
+    target.querySelectorAll('[data-flag-id]').forEach((button) => {
+        button.addEventListener('click', () => selectReviewItem(Number(button.dataset.flagId)));
+    });
+}
+
+function renderWorkspaceSelectedReviewItem() {
+    const item = getSelectedReviewItem();
+    const target = document.getElementById('workspaceSelectedReviewItem');
+    if (!item) {
+        target.innerHTML = '<p class="muted-copy">No review item selected.</p>';
+        return;
+    }
+    target.innerHTML = `
+        <div class="stack-item">
+            <strong>${escapeHtml(item.issue_category)}</strong>
+            <span>${escapeHtml(item.word_text || item.original_value || 'Review item')}</span>
+            <span>${escapeHtml(item.speaker_label || item.block_type || 'Transcript item')}</span>
+        </div>
+    `;
+}
+
+function renderWorkspaceSpeakerReview() {
+    const target = document.getElementById('workspaceSpeakerReview');
+    target.innerHTML = reviewSpeakerReview.render(getSelectedReviewItem());
+    const button = document.getElementById('workspaceSpeakerCorrectionButton');
+    if (button) {
+        button.addEventListener('click', handleSpeakerCorrection);
+    }
+}
+
+function renderWorkspaceAuditHistory() {
+    document.getElementById('workspaceAuditHistory').innerHTML = reviewAuditHistory.render(
+        workspaceState.auditItems,
+    );
+}
+
+function renderWorkspaceConfidencePanel(summary) {
+    document.getElementById('workspaceConfidencePanel').innerHTML =
+        reviewConfidencePanel.render(summary);
 }
 
 async function handleWordSeek(button) {
@@ -202,6 +275,11 @@ function handleWorkspaceSearch(event) {
     renderWorkspaceTranscript(filtered);
     renderReviewCandidates(filtered);
     renderNavigationMeta();
+}
+
+function handleReviewerChange(event) {
+    appState.workspaceReviewer = event.target.value.trim();
+    persistState();
 }
 
 function handleJumpToTime(event) {
@@ -296,8 +374,100 @@ function renderNavigationMeta(wordPayload = null) {
     `;
 }
 
+function selectReviewItem(flagId) {
+    workspaceState.selectedReviewFlagId = flagId;
+    renderWorkspaceSelectedReviewItem();
+    renderWorkspaceSpeakerReview();
+    const item = getSelectedReviewItem();
+    if (item?.word_object_id) {
+        const wordButton = document.querySelector(
+            `[data-word-id="${String(item.word_object_id)}"]`,
+        );
+        if (wordButton) {
+            wordButton.click();
+        }
+    }
+}
+
+function getSelectedReviewItem() {
+    return (
+        workspaceState.reviewQueue.find(
+            (item) => item.id === workspaceState.selectedReviewFlagId,
+        ) || null
+    );
+}
+
+async function resolveSelectedReviewItem(action, applyDeterministicRules = false) {
+    const item = getSelectedReviewItem();
+    const reviewer = String(document.getElementById('workspaceReviewer').value || '').trim();
+    if (!item) {
+        updateWorkspaceStatus('Select a review item first.', 'error');
+        return;
+    }
+    if (!reviewer) {
+        updateWorkspaceStatus(
+            'Reviewer identity is required before resolving review items.',
+            'error',
+        );
+        return;
+    }
+    const note = document.getElementById('workspaceReviewerNote').value.trim() || null;
+    await resolveReviewItem({
+        session_id: appState.currentSessionId,
+        review_flag_id: item.id,
+        action,
+        reviewer,
+        note,
+        apply_deterministic_rules: applyDeterministicRules,
+    });
+    await loadWorkspaceTimeline(appState.currentSessionId);
+    updateWorkspaceStatus(`Review item ${item.id} resolved.`, 'success');
+}
+
+async function handleSpeakerCorrection() {
+    const item = getSelectedReviewItem();
+    const reviewer = String(document.getElementById('workspaceReviewer').value || '').trim();
+    if (!item) {
+        updateWorkspaceStatus('Select a review item first.', 'error');
+        return;
+    }
+    if (!reviewer) {
+        updateWorkspaceStatus('Reviewer identity is required before speaker correction.', 'error');
+        return;
+    }
+    const correctedSpeakerLabel =
+        document.getElementById('workspaceCorrectedSpeakerLabel')?.value.trim() || '';
+    const correctedRole =
+        document.getElementById('workspaceCorrectedSpeakerRole')?.value.trim() || null;
+    const note = document.getElementById('workspaceReviewerNote').value.trim() || null;
+    if (!correctedSpeakerLabel) {
+        updateWorkspaceStatus('Corrected speaker label is required.', 'error');
+        return;
+    }
+    await resolveReviewItem({
+        session_id: appState.currentSessionId,
+        review_flag_id: item.id,
+        action: 'resolve',
+        reviewer,
+        note,
+        corrected_speaker_label: correctedSpeakerLabel,
+        corrected_role: correctedRole,
+    });
+    await loadWorkspaceTimeline(appState.currentSessionId);
+    updateWorkspaceStatus(`Speaker correction applied to review item ${item.id}.`, 'success');
+}
+
 function updateWorkspaceStatus(message, state) {
     const element = document.getElementById('workspaceStatus');
     element.textContent = message;
     element.dataset.state = state;
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
 }

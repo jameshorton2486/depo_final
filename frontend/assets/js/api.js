@@ -67,3 +67,33 @@ async function fetchTranscriptWord(sessionId, wordId) {
     }
     return response.json();
 }
+
+async function fetchReviewQueue(sessionId) {
+    const response = await fetch(`/api/review/${sessionId}/queue`);
+    if (!response.ok) {
+        throw new Error(`Review queue fetch failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function resolveReviewItem(payload) {
+    const response = await fetch('/api/review/resolve', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Review resolve failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchReviewAudit(sessionId) {
+    const response = await fetch(`/api/review/${sessionId}/audit`);
+    if (!response.ok) {
+        throw new Error(`Review audit fetch failed with ${response.status}`);
+    }
+    return response.json();
+}

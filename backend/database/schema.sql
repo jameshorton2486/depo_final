@@ -246,3 +246,80 @@ CREATE TABLE IF NOT EXISTS word_objects (
     FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
     UNIQUE (transcript_block_id, word_index)
 );
+
+CREATE TABLE IF NOT EXISTS review_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    reviewer TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'in_progress',
+    reviewer_notes TEXT,
+    started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS review_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    word_object_id INTEGER,
+    transcript_block_id INTEGER,
+    speaker_segment_id INTEGER,
+    issue_category TEXT NOT NULL,
+    confidence_level TEXT,
+    status TEXT NOT NULL DEFAULT 'open',
+    source TEXT NOT NULL DEFAULT 'automatic',
+    note TEXT,
+    original_value TEXT,
+    current_value TEXT,
+    reviewer TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_object_id) REFERENCES word_objects(id) ON DELETE CASCADE,
+    FOREIGN KEY (transcript_block_id) REFERENCES transcript_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (speaker_segment_id) REFERENCES speaker_segments(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS review_actions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    review_flag_id INTEGER NOT NULL,
+    review_session_id INTEGER,
+    action_type TEXT NOT NULL,
+    reviewer TEXT NOT NULL,
+    note TEXT,
+    original_value TEXT,
+    modified_value TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (review_flag_id) REFERENCES review_flags(id) ON DELETE CASCADE,
+    FOREIGN KEY (review_session_id) REFERENCES review_sessions(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS speaker_corrections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    speaker_segment_id INTEGER NOT NULL,
+    original_speaker_label TEXT NOT NULL,
+    corrected_speaker_label TEXT NOT NULL,
+    corrected_role TEXT,
+    reviewer TEXT NOT NULL,
+    note TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (speaker_segment_id) REFERENCES speaker_segments(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS transcript_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    action_type TEXT NOT NULL,
+    issue_category TEXT,
+    original_value TEXT,
+    modified_value TEXT,
+    reviewer TEXT NOT NULL,
+    correction_source TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
