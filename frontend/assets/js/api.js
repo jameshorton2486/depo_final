@@ -30,6 +30,30 @@ async function fetchIntake(caseId) {
     return response.json();
 }
 
+async function fetchIntakeCases() {
+    const response = await fetch('/api/intake/cases');
+    if (!response.ok) {
+        throw new Error(`Intake cases fetch failed with ${response.status}`);
+    }
+    const payload = await response.json();
+    appState.intakeCases = payload.items || [];
+    return payload;
+}
+
+async function persistCaseStage(caseId, stageId) {
+    const response = await fetch(`/api/intake/${caseId}/stage`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ stage_id: stageId }),
+    });
+    if (!response.ok) {
+        throw new Error(`Case stage persistence failed with ${response.status}`);
+    }
+    return response.json();
+}
+
 async function transcribePrerecorded(payload) {
     const response = await fetch('/api/transcribe/prerecorded', {
         method: 'POST',

@@ -26,13 +26,16 @@
                         <span class="layer-badge raw">RAW (IMMUTABLE)</span>
                         <span class="layer-badge working">WORKING (EDITABLE)</span>
                     </div>
-                    <p class="muted-copy">
-                        Foundation shell only. Transcript workflows and editing arrive in later
-                        phases.
-                    </p>
+                    <p id="transcriptLayerSummary" class="muted-copy">No case loaded.</p>
+                    <div id="transcriptLayerGrid" class="stack-list"></div>
                 </section>
                 <section class="rail-panel">
-                    <p class="panel-label">System Health</p>
+                    <div class="panel-header">
+                        <p class="panel-label">System Health</p>
+                        <button id="systemHealthRefresh" class="secondary-button" type="button">
+                            Refresh
+                        </button>
+                    </div>
                     <div class="stack-list">
                         <span id="systemHealthBadge" class="status-pill" data-state="idle">
                             Health unknown
@@ -40,6 +43,7 @@
                         <p id="systemHealthSummary" class="muted-copy">
                             Diagnostics not loaded yet.
                         </p>
+                        <div id="systemHealthDetails" class="stack-list"></div>
                     </div>
                 </section>
             </aside>

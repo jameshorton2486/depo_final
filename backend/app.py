@@ -42,7 +42,13 @@ from backend.review.transcript_query_service import (
     get_review_timeline,
     get_review_word,
 )
-from backend.services.intake_service import IntakeParseRequest, get_intake, parse_and_persist
+from backend.services.intake_service import (
+    IntakeParseRequest,
+    get_intake,
+    list_intake_cases,
+    parse_and_persist,
+    update_case_stage,
+)
 from backend.system.diagnostics import get_system_diagnostics
 from backend.system.health_monitor import get_system_health
 from backend.system.performance_metrics import get_performance_metrics
@@ -114,10 +120,23 @@ async def parse_intake(request: IntakeParseRequest) -> dict[str, object]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@app.get("/api/intake/cases")
+async def intake_cases() -> dict[str, object]:
+    return list_intake_cases()
+
+
 @app.get("/api/intake/{case_id}")
 async def intake_details(case_id: int) -> dict[str, object]:
     try:
         return get_intake(case_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/intake/{case_id}/stage")
+async def intake_stage(case_id: int, payload: dict[str, int]) -> dict[str, object]:
+    try:
+        return update_case_stage(case_id, int(payload.get("stage_id", 1)))
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

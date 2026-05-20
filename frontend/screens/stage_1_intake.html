@@ -14,6 +14,30 @@
         <div class="intake-shell">
             <section class="intake-form-shell">
                 <div class="placeholder-card intake-form-card">
+                    <div class="intake-toolbar">
+                        <label class="field-group">
+                            <span class="field-label">Persisted Cases</span>
+                            <select id="intakeCaseSelect" class="text-input">
+                                <option value="">Select a persisted case</option>
+                            </select>
+                        </label>
+                        <div class="action-row">
+                            <button
+                                id="intakeCasesRefreshButton"
+                                class="secondary-button"
+                                type="button"
+                            >
+                                Refresh Cases
+                            </button>
+                            <button
+                                id="intakeDiagnosticsRefreshButton"
+                                class="secondary-button"
+                                type="button"
+                            >
+                                Refresh Health
+                            </button>
+                        </div>
+                    </div>
                     <div class="intake-form-grid">
                         <label class="field-group">
                             <span class="field-label">Source Document</span>
@@ -102,6 +126,15 @@
                     </div>
                     <div id="speakerLabelPreview" class="stack-list"></div>
                 </div>
+                <div class="placeholder-card">
+                    <div class="panel-header">
+                        <div>
+                            <p class="panel-label">Case State</p>
+                            <h4>Pipeline + persistence state</h4>
+                        </div>
+                    </div>
+                    <div id="intakeCaseStateGrid" class="result-grid"></div>
+                </div>
             </section>
         </div>
     </article>
@@ -109,7 +142,13 @@
         <p class="panel-label">Generated Output</p>
         <div class="placeholder-stack intake-sidebar">
             <div class="placeholder-card compact">
-                <h4>Keyterm Preview</h4>
+                <div class="panel-header">
+                    <h4>Keyterm Preview</h4>
+                    <select id="keytermSort" class="text-input">
+                        <option value="weight">Sort by boost</option>
+                        <option value="category">Sort by category</option>
+                    </select>
+                </div>
                 <div id="keytermPreview" class="keyterm-cloud"></div>
             </div>
             <div class="placeholder-card compact">

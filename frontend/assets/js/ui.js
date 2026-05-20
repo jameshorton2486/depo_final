@@ -31,10 +31,12 @@ function renderStageNav() {
 function renderPipeline() {
     const indicator = document.getElementById('pipelineIndicator');
     const summary = document.getElementById('pipelineSummary');
-    summary.textContent = `${appState.currentStage} of ${STAGES.length}`;
+    const stageState =
+        appState.currentCaseState?.stage_id || appState.currentCaseStage || appState.currentStage;
+    summary.textContent = `${stageState} of ${STAGES.length}`;
     indicator.innerHTML = STAGES.map(
         (stage) => `
-        <div class="pipeline-step${stage.id === appState.currentStage ? ' active' : ''}">
+        <div class="pipeline-step${resolvePipelineClass(stage.id)}">
             <span class="pipeline-dot">${stage.id}</span>
             <span class="stage-meta">${stage.title}</span>
         </div>
@@ -49,6 +51,10 @@ function updateWorkspaceHeader() {
 
 function bindGlobalUi() {
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    const refreshButton = document.getElementById('systemHealthRefresh');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => refreshSystemPanels().catch(console.error));
+    }
 }
 
 function updateSystemHealthBadge(payload = null) {
@@ -66,6 +72,86 @@ function updateSystemHealthBadge(payload = null) {
     badge.textContent = payload.status === 'ok' ? 'System healthy' : 'Needs review';
     badge.dataset.state = payload.status === 'ok' ? 'success' : 'working';
     summary.textContent = `${payload.session_count || 0} sessions scanned, ${payload.integrity_issue_count || 0} integrity issues.`;
+}
+
+async function refreshSystemPanels() {
+    const [healthPayload, diagnosticsPayload] = await Promise.all([
+        fetchSystemHealth(),
+        fetchSystemDiagnostics(appState.currentSessionId || null),
+    ]);
+    updateSystemHealthBadge(healthPayload);
+    const summary = diagnosticsPayload.summary || {};
+    appState.transcriptLayerState = {
+        raw_status: appState.currentSessionId
+            ? 'Persisted transcript present'
+            : 'Awaiting transcript',
+        working_status: appState.currentStage >= 3 ? 'Review workflow available' : 'Locked',
+        review_state: appState.currentCaseState?.review_state || 'pending',
+        export_readiness: appState.currentCaseState?.is_export_ready ? 'Ready' : 'Blocked',
+        session_count: appState.currentCaseState?.session_count || 0,
+        integrity_issue_count: summary.integrity_issue_count || 0,
+    };
+    renderTranscriptLayersPanel();
+    renderSystemHealthDetails(summary);
+}
+
+function renderTranscriptLayersPanel() {
+    const state = appState.transcriptLayerState || {};
+    const summary = document.getElementById('transcriptLayerSummary');
+    const target = document.getElementById('transcriptLayerGrid');
+    if (!summary || !target) {
+        return;
+    }
+    summary.textContent = appState.currentCaseId
+        ? `Case ${appState.currentCaseId}`
+        : 'No case loaded.';
+    target.innerHTML = `
+        <div class="stack-item"><strong>RAW</strong><span>${escapeHtml(state.raw_status || 'Not started')}</span></div>
+        <div class="stack-item"><strong>WORKING</strong><span>${escapeHtml(state.working_status || 'Pending')}</span></div>
+        <div class="stack-item"><strong>Review</strong><span>${escapeHtml(state.review_state || 'pending')}</span></div>
+        <div class="stack-item"><strong>Export</strong><span>${escapeHtml(state.export_readiness || 'Blocked')}</span></div>
+        <div class="stack-item"><strong>Sessions</strong><span>${escapeHtml(String(state.session_count || 0))}</span></div>
+        <div class="stack-item"><strong>Integrity</strong><span>${escapeHtml(String(state.integrity_issue_count || 0))} issues</span></div>
+    `;
+}
+
+function renderSystemHealthDetails(summary) {
+    const target = document.getElementById('systemHealthDetails');
+    if (!target) {
+        return;
+    }
+    target.innerHTML = `
+        <div class="stack-item"><strong>Sessions Scanned</strong><span>${escapeHtml(String(summary.sessions_scanned || 0))}</span></div>
+        <div class="stack-item"><strong>Orphans</strong><span>${escapeHtml(String(summary.orphan_transcript_count || 0))}</span></div>
+        <div class="stack-item"><strong>Missing Assets</strong><span>${escapeHtml(String(summary.missing_asset_count || 0))}</span></div>
+        <div class="stack-item"><strong>Export Failures</strong><span>${escapeHtml(String(summary.export_failure_count || 0))}</span></div>
+        <div class="stack-item"><strong>Realtime</strong><span>${escapeHtml(summary.realtime_reconnect_count ? 'Warning' : 'Healthy')}</span></div>
+        <div class="stack-item"><strong>Database</strong><span>${escapeHtml(summary.database_health || 'Unknown')}</span></div>
+    `;
+}
+
+function resolvePipelineClass(stageId) {
+    const currentStage =
+        appState.currentCaseState?.stage_id || appState.currentCaseStage || appState.currentStage;
+    if (stageId === currentStage) {
+        return ' active';
+    }
+    if (stageId < currentStage) {
+        return ' completed';
+    }
+    if (stageId === currentStage + 1) {
+        return ' available';
+    }
+    return ' blocked';
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
 }
 
 function showNotification(message, state = 'idle') {

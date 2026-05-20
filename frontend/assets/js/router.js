@@ -18,6 +18,7 @@ async function loadStage(stageId) {
     }
 
     appState.currentStage = stageId;
+    appState.currentCaseStage = stageId;
     persistState();
     screenRoot.innerHTML = html;
     renderStageNav();
@@ -28,6 +29,16 @@ async function loadStage(stageId) {
     const module = SCREEN_MODULES[stageId];
     if (module && typeof module.init === 'function') {
         module.init();
+    }
+    if (appState.currentCaseId) {
+        try {
+            const persisted = await persistCaseStage(appState.currentCaseId, stageId);
+            appState.currentCaseState = persisted.case_state || appState.currentCaseState;
+            renderPipeline();
+            renderTranscriptLayersPanel();
+        } catch (error) {
+            console.error(error);
+        }
     }
     showNotification(`Stage ${stageId} ready.`, 'success');
 }
@@ -43,6 +54,19 @@ async function bootstrapApp() {
         await fetchHealth();
         const systemHealth = await fetchSystemHealth();
         updateSystemHealthBadge(systemHealth);
+        if (appState.currentCaseId) {
+            const intake = await fetchIntake(appState.currentCaseId);
+            appState.currentCaseState = intake.case_state || null;
+            appState.currentCaseStage = intake.case_state?.stage_id || appState.currentCaseStage;
+            if (intake.case_state?.latest_session_id) {
+                appState.currentSessionId = intake.case_state.latest_session_id;
+            }
+            if (appState.currentCaseStage) {
+                appState.currentStage = appState.currentCaseStage;
+            }
+            persistState();
+        }
+        await refreshSystemPanels();
     } catch (error) {
         console.error(error);
         showNotification(error.message, 'error');

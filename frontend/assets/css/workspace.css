@@ -118,6 +118,18 @@
     gap: 10px;
 }
 
+.pipeline-step.completed {
+    border-color: rgba(77, 208, 167, 0.35);
+}
+
+.pipeline-step.available {
+    border-color: rgba(236, 181, 68, 0.35);
+}
+
+.pipeline-step.blocked {
+    opacity: 0.6;
+}
+
 .screen-root {
     min-height: 0;
 }
@@ -349,7 +361,8 @@
     .editable-grid,
     .transcript-upload-grid,
     .transcript-status-grid,
-    .workspace-control-grid {
+    .workspace-control-grid,
+    .intake-toolbar {
         grid-template-columns: 1fr;
     }
 }

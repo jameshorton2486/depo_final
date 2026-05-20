@@ -4,10 +4,12 @@ import base64
 import json
 import math
 import os
+import socket
 import struct
 import subprocess
 import tempfile
 import time
+import urllib.error
 import urllib.request
 import wave
 
@@ -26,9 +28,32 @@ def _get_json(url: str) -> dict[str, object]:
     return json.loads(urllib.request.urlopen(url).read().decode("utf-8"))
 
 
+def _find_open_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as handle:
+        handle.bind(("127.0.0.1", 0))
+        return int(handle.getsockname()[1])
+
+
+def _wait_for_server(base_url: str, timeout_seconds: float = 15.0) -> None:
+    deadline = time.time() + timeout_seconds
+    last_error: Exception | None = None
+    while time.time() < deadline:
+        try:
+            response = _get_json(f"{base_url}/api/health")
+            if response.get("status") == "ok":
+                return
+        except (ConnectionError, OSError, urllib.error.URLError, ValueError) as exc:
+            last_error = exc
+        time.sleep(0.25)
+    raise RuntimeError(f"Timed out waiting for runtime verification server: {last_error}")
+
+
 def main() -> None:
+    port = _find_open_port()
+    base_url = f"http://127.0.0.1:{port}"
     env = dict(os.environ)
     env["DEPO_PRO_TRANSCRIBE_MOCK"] = "1"
+    env["DEPO_PRO_PORT"] = str(port)
     process = subprocess.Popen(
         [
             r".\.venv\Scripts\python.exe",
@@ -38,29 +63,23 @@ def main() -> None:
             "--host",
             "127.0.0.1",
             "--port",
-            "8765",
+            str(port),
         ],
         env=env,
     )
     try:
-        time.sleep(2)
-        health = _get_json("http://127.0.0.1:8765/api/health")
-        system_health = _get_json("http://127.0.0.1:8765/api/system/health")
-        db_status = _get_json("http://127.0.0.1:8765/api/db/status")
-        stage1 = urllib.request.urlopen("http://127.0.0.1:8765/screens/stage_1_intake.html").status
-        stage2 = urllib.request.urlopen(
-            "http://127.0.0.1:8765/screens/stage_2_transcripts.html"
-        ).status
-        stage3 = urllib.request.urlopen(
-            "http://127.0.0.1:8765/screens/stage_3_workspace.html"
-        ).status
-        stage4 = urllib.request.urlopen(
-            "http://127.0.0.1:8765/screens/stage_4_insertions.html"
-        ).status
-        stage6 = urllib.request.urlopen("http://127.0.0.1:8765/screens/stage_6_export.html").status
+        _wait_for_server(base_url)
+        health = _get_json(f"{base_url}/api/health")
+        system_health = _get_json(f"{base_url}/api/system/health")
+        db_status = _get_json(f"{base_url}/api/db/status")
+        stage1 = urllib.request.urlopen(f"{base_url}/screens/stage_1_intake.html").status
+        stage2 = urllib.request.urlopen(f"{base_url}/screens/stage_2_transcripts.html").status
+        stage3 = urllib.request.urlopen(f"{base_url}/screens/stage_3_workspace.html").status
+        stage4 = urllib.request.urlopen(f"{base_url}/screens/stage_4_insertions.html").status
+        stage6 = urllib.request.urlopen(f"{base_url}/screens/stage_6_export.html").status
 
         parsed = _post_json(
-            "http://127.0.0.1:8765/api/intake/parse",
+            f"{base_url}/api/intake/parse",
             {
                 "pasted_text": (
                     "DELIA GARZA\nv.\nHOME DEPOT U.S.A., INC.\nCAUSE NO. 25-cv-00598-OLG\n"
@@ -70,7 +89,12 @@ def main() -> None:
                 "intake_metadata": {"source_document": "verify-intake.txt"},
             },
         )
-        persisted = _get_json(f"http://127.0.0.1:8765/api/intake/{parsed['case_id']}")
+        persisted = _get_json(f"{base_url}/api/intake/{parsed['case_id']}")
+        intake_cases = _get_json(f"{base_url}/api/intake/cases")
+        persisted_stage = _post_json(
+            f"{base_url}/api/intake/{parsed['case_id']}/stage",
+            {"stage_id": 3},
+        )
 
         temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
         temp_audio.close()
@@ -83,9 +107,10 @@ def main() -> None:
                 for index in range(16000 * 4)
             )
             wave_file.writeframes(frames)
-        encoded_audio = base64.b64encode(open(temp_audio.name, "rb").read()).decode("utf-8")
+        with open(temp_audio.name, "rb") as audio_file:
+            encoded_audio = base64.b64encode(audio_file.read()).decode("utf-8")
         transcription_result = _post_json(
-            "http://127.0.0.1:8765/api/transcribe/prerecorded",
+            f"{base_url}/api/transcribe/prerecorded",
             {
                 "case_id": parsed["case_id"],
                 "file_name": "verify.wav",
@@ -93,13 +118,13 @@ def main() -> None:
             },
         )
         session_id = int(transcription_result["session_id"])
-        timeline = _get_json(f"http://127.0.0.1:8765/api/transcript/{session_id}/timeline")
-        queue = _get_json(f"http://127.0.0.1:8765/api/review/{session_id}/queue")
+        timeline = _get_json(f"{base_url}/api/transcript/{session_id}/timeline")
+        queue = _get_json(f"{base_url}/api/review/{session_id}/queue")
         low_item = next(
             item for item in queue["items"] if item["issue_category"] == "LOW_CONFIDENCE"
         )
         resolved = _post_json(
-            "http://127.0.0.1:8765/api/review/resolve",
+            f"{base_url}/api/review/resolve",
             {
                 "session_id": session_id,
                 "review_flag_id": low_item["id"],
@@ -113,7 +138,7 @@ def main() -> None:
             item for item in queue["items"] if item.get("speaker_segment_id") is not None
         )
         speaker_resolved = _post_json(
-            "http://127.0.0.1:8765/api/review/resolve",
+            f"{base_url}/api/review/resolve",
             {
                 "session_id": session_id,
                 "review_flag_id": speaker_item["id"],
@@ -124,15 +149,15 @@ def main() -> None:
                 "corrected_role": "attorney",
             },
         )
-        audit = _get_json(f"http://127.0.0.1:8765/api/review/{session_id}/audit")
+        audit = _get_json(f"{base_url}/api/review/{session_id}/audit")
         word_id = timeline["timeline"][0]["words"][0]["id"]
-        word = _get_json(f"http://127.0.0.1:8765/api/transcript/{session_id}/word/{word_id}")
+        word = _get_json(f"{base_url}/api/transcript/{session_id}/word/{word_id}")
         media_status = urllib.request.urlopen(
-            f"http://127.0.0.1:8765/api/transcript/{session_id}/media"
+            f"{base_url}/api/transcript/{session_id}/media"
         ).status
 
         annotation_result = _post_json(
-            "http://127.0.0.1:8765/api/review/annotation",
+            f"{base_url}/api/review/annotation",
             {
                 "session_id": session_id,
                 "transcript_block_id": timeline["timeline"][0]["id"],
@@ -144,7 +169,7 @@ def main() -> None:
             },
         )
         objection_result = _post_json(
-            "http://127.0.0.1:8765/api/review/objection",
+            f"{base_url}/api/review/objection",
             {
                 "session_id": session_id,
                 "transcript_block_id": timeline["timeline"][0]["id"],
@@ -154,7 +179,7 @@ def main() -> None:
             },
         )
         exhibit_result = _post_json(
-            "http://127.0.0.1:8765/api/review/exhibit-link",
+            f"{base_url}/api/review/exhibit-link",
             {
                 "session_id": session_id,
                 "transcript_block_id": timeline["timeline"][0]["id"],
@@ -163,32 +188,28 @@ def main() -> None:
                 "created_by": "verify-user",
             },
         )
-        review_dashboard = _get_json(f"http://127.0.0.1:8765/api/review/{session_id}/dashboard")
-        review_navigation = _get_json(f"http://127.0.0.1:8765/api/review/{session_id}/navigation")
-        diagnostics = _get_json(
-            f"http://127.0.0.1:8765/api/system/diagnostics?session_id={session_id}"
-        )
-        performance = _get_json(
-            f"http://127.0.0.1:8765/api/system/performance?session_id={session_id}"
-        )
+        review_dashboard = _get_json(f"{base_url}/api/review/{session_id}/dashboard")
+        review_navigation = _get_json(f"{base_url}/api/review/{session_id}/navigation")
+        diagnostics = _get_json(f"{base_url}/api/system/diagnostics?session_id={session_id}")
+        performance = _get_json(f"{base_url}/api/system/performance?session_id={session_id}")
         recovery_checkpoint = _post_json(
-            "http://127.0.0.1:8765/api/system/recovery",
+            f"{base_url}/api/system/recovery",
             {"action": "checkpoint", "session_id": session_id},
         )
 
         docx_result = _post_json(
-            "http://127.0.0.1:8765/api/export/docx",
+            f"{base_url}/api/export/docx",
             {"session_id": session_id, "include_pdf": False},
         )
-        txt_result = _post_json("http://127.0.0.1:8765/api/export/txt", {"session_id": session_id})
+        txt_result = _post_json(f"{base_url}/api/export/txt", {"session_id": session_id})
         package_result = _post_json(
-            "http://127.0.0.1:8765/api/export/package",
+            f"{base_url}/api/export/package",
             {"session_id": session_id, "include_pdf": True},
         )
-        export_history = _get_json(f"http://127.0.0.1:8765/api/export/{session_id}/history")
+        export_history = _get_json(f"{base_url}/api/export/{session_id}/history")
 
         realtime_started = _post_json(
-            "http://127.0.0.1:8765/api/realtime/start",
+            f"{base_url}/api/realtime/start",
             {
                 "session_id": session_id,
                 "meeting_id": "verify-meeting",
@@ -197,9 +218,9 @@ def main() -> None:
             },
         )
         time.sleep(1)
-        realtime_status = _get_json(f"http://127.0.0.1:8765/api/realtime/status/{session_id}")
+        realtime_status = _get_json(f"{base_url}/api/realtime/status/{session_id}")
         realtime_stopped = _post_json(
-            "http://127.0.0.1:8765/api/realtime/stop",
+            f"{base_url}/api/realtime/stop",
             {"session_id": session_id, "reason": "verify-stop"},
         )
 
@@ -211,6 +232,8 @@ def main() -> None:
         assert parsed["keyterms"]["term_count"] >= 1
         assert parsed["phonetics"]["generated"] is not None
         assert persisted["case"]["id"] == parsed["case_id"]
+        assert intake_cases["items"]
+        assert persisted_stage["case_state"]["stage_id"] == 3
         assert timeline["timeline"]
         assert queue["items"]
         assert resolved["review_flag"]["status"] == "reviewed"

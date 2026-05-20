@@ -55,7 +55,33 @@ def create_case(payload: CaseCreate, database_path: Path | None = None) -> CaseR
 
 def get_case(case_id: int, database_path: Path | None = None) -> CaseRecord:
     with open_connection(database_path) as connection:
-        row = connection.execute("SELECT * FROM cases WHERE id = ?", (case_id,)).fetchone()
+        row = connection.execute(
+            """
+            SELECT
+                id,
+                case_name,
+                caption,
+                case_style,
+                cause_number,
+                venue,
+                jurisdiction,
+                district_division,
+                county,
+                court_type,
+                state,
+                case_status,
+                reporting_firm_id,
+                reporting_firm_office_id,
+                source_document,
+                extracted_from,
+                parser_confidence,
+                created_at,
+                COALESCE(updated_at, created_at) AS updated_at
+            FROM cases
+            WHERE id = ?
+            """,
+            (case_id,),
+        ).fetchone()
     if row is None:
         raise LookupError(f"Case {case_id} was not found.")
     return CaseRecord.model_validate(dict(row))
@@ -63,9 +89,30 @@ def get_case(case_id: int, database_path: Path | None = None) -> CaseRecord:
 
 def list_cases(database_path: Path | None = None) -> list[CaseRecord]:
     with open_connection(database_path) as connection:
-        rows = connection.execute(
-            "SELECT * FROM cases ORDER BY created_at DESC, id DESC"
-        ).fetchall()
+        rows = connection.execute("""
+            SELECT
+                id,
+                case_name,
+                caption,
+                case_style,
+                cause_number,
+                venue,
+                jurisdiction,
+                district_division,
+                county,
+                court_type,
+                state,
+                case_status,
+                reporting_firm_id,
+                reporting_firm_office_id,
+                source_document,
+                extracted_from,
+                parser_confidence,
+                created_at,
+                COALESCE(updated_at, created_at) AS updated_at
+            FROM cases
+            ORDER BY created_at DESC, id DESC
+            """).fetchall()
     return [CaseRecord.model_validate(dict(row)) for row in rows]
 
 
@@ -343,7 +390,33 @@ def replace_case_attorneys(
 
 def get_case_intake(case_id: int, database_path: Path | None = None) -> dict[str, object]:
     with open_connection(database_path) as connection:
-        case_row = connection.execute("SELECT * FROM cases WHERE id = ?", (case_id,)).fetchone()
+        case_row = connection.execute(
+            """
+            SELECT
+                id,
+                case_name,
+                caption,
+                case_style,
+                cause_number,
+                venue,
+                jurisdiction,
+                district_division,
+                county,
+                court_type,
+                state,
+                case_status,
+                reporting_firm_id,
+                reporting_firm_office_id,
+                source_document,
+                extracted_from,
+                parser_confidence,
+                created_at,
+                COALESCE(updated_at, created_at) AS updated_at
+            FROM cases
+            WHERE id = ?
+            """,
+            (case_id,),
+        ).fetchone()
         if case_row is None:
             raise LookupError(f"Case {case_id} was not found.")
         parties = [

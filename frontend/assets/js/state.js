@@ -35,6 +35,10 @@ const appState = {
     workspaceSearch: window.localStorage.getItem('depo-pro-workspace-search') || '',
     workspaceReviewer: window.localStorage.getItem('depo-pro-workspace-reviewer') || '',
     reviewSidebarCollapsed: window.localStorage.getItem('depo-pro-review-sidebar') === '1',
+    currentCaseStage: Number(window.localStorage.getItem('depo-pro-case-stage') || 1),
+    intakeCases: [],
+    currentCaseState: null,
+    transcriptLayerState: null,
     screenCache: {},
     health: null,
     systemHealth: null,
@@ -59,4 +63,5 @@ function persistState() {
         'depo-pro-review-sidebar',
         appState.reviewSidebarCollapsed ? '1' : '0',
     );
+    window.localStorage.setItem('depo-pro-case-stage', String(appState.currentCaseStage || 1));
 }
