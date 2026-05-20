@@ -153,7 +153,10 @@
 .editable-grid,
 .result-grid,
 .intake-results-shell,
-.intake-form-shell {
+.intake-form-shell,
+.transcript-upload-grid,
+.transcript-status-grid,
+.transcript-viewer {
     display: grid;
     gap: 16px;
 }
@@ -171,8 +174,15 @@
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.transcript-upload-grid,
+.transcript-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .intake-sidebar,
-.stack-list {
+.stack-list,
+.transcript-block-card,
+.transcript-shell {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -203,10 +213,35 @@
     gap: 10px;
 }
 
+.transcript-viewer {
+    max-height: 680px;
+    overflow: auto;
+}
+
+.transcript-block-card {
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+}
+
+.word-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.media-preview {
+    width: 100%;
+    max-height: 220px;
+}
+
 @media (max-width: 1100px) {
     .intake-shell,
     .intake-form-grid,
-    .editable-grid {
+    .editable-grid,
+    .transcript-upload-grid,
+    .transcript-status-grid {
         grid-template-columns: 1fr;
     }
 }

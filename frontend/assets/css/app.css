@@ -176,6 +176,10 @@ h4 {
     color: var(--warning);
 }
 
+.status-pill[data-state='idle'] {
+    color: var(--text-muted);
+}
+
 .result-card {
     padding: 16px;
     border-radius: 18px;
@@ -190,4 +194,38 @@ h4 {
 
 .summary-row:last-child {
     border-bottom: 0;
+}
+
+.summary-metric {
+    min-height: 120px;
+}
+
+.confidence-chip,
+.word-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    border: 1px solid var(--line);
+}
+
+.confidence-chip.high,
+.word-pill.high {
+    background: rgba(77, 208, 167, 0.12);
+    color: var(--success);
+}
+
+.confidence-chip.medium,
+.word-pill.medium {
+    background: rgba(236, 181, 68, 0.16);
+    color: var(--warning);
+}
+
+.confidence-chip.low,
+.word-pill.low {
+    background: rgba(255, 107, 107, 0.16);
+    color: #ff8d87;
 }

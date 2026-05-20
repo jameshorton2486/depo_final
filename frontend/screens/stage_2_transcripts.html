@@ -1,23 +1,113 @@
-<section class="stage-layout">
+<section class="stage-layout transcript-shell">
     <article class="content-panel">
         <div class="panel-header">
             <div>
                 <p class="panel-label">Transcripts</p>
-                <h3>Transcript asset intake</h3>
+                <h3>Prerecorded transcription pipeline</h3>
             </div>
-            <span class="chip">Placeholder</span>
+            <span class="layer-badge raw">RAW IMMUTABLE</span>
         </div>
-        <p class="lead">This stage will later manage transcript asset ingestion and validation.</p>
-        <div class="placeholder-card transcript-panel">
-            <h4>Placeholder transcript panel</h4>
-            <p>Transcript file listings, provenance, and import diagnostics will appear here.</p>
+        <p class="lead">
+            Upload a prerecorded audio or video asset, run preprocessing, and persist the raw
+            canonical transcript truth layer.
+        </p>
+        <div class="transcript-upload-grid">
+            <label class="field-group">
+                <span class="field-label">Case Id</span>
+                <input
+                    id="transcriptCaseId"
+                    class="text-input"
+                    type="number"
+                    min="1"
+                    placeholder="Existing case id"
+                />
+            </label>
+            <label class="field-group">
+                <span class="field-label">Session Id</span>
+                <input
+                    id="transcriptSessionId"
+                    class="text-input"
+                    type="number"
+                    min="1"
+                    placeholder="Optional existing session id"
+                />
+            </label>
+        </div>
+        <label class="field-group">
+            <span class="field-label">Audio / Video Asset</span>
+            <input id="transcriptFile" class="file-input" type="file" accept="audio/*,video/*" />
+        </label>
+        <div class="action-row">
+            <button id="transcriptStartButton" class="primary-button" type="button">
+                Run Transcription
+            </button>
+            <button id="transcriptReloadButton" class="secondary-button" type="button">
+                Reload Transcript
+            </button>
+            <span id="transcriptStatus" class="status-pill" data-state="idle">Awaiting asset</span>
+        </div>
+        <div class="transcript-status-grid">
+            <div class="result-card">
+                <h4>Pipeline Status</h4>
+                <div id="transcriptProgress" class="stack-list">
+                    <div class="stack-item"><strong>Preprocessing</strong><span>Pending</span></div>
+                    <div class="stack-item"><strong>Deepgram</strong><span>Pending</span></div>
+                    <div class="stack-item">
+                        <strong>Layer 3 Persistence</strong><span>Pending</span>
+                    </div>
+                </div>
+            </div>
+            <div class="result-card">
+                <h4>Media Preview</h4>
+                <div id="transcriptMediaPreview" class="placeholder-card compact">
+                    <p>Select an audio or video asset to preview it here before transcription.</p>
+                </div>
+            </div>
+        </div>
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Transcript Summary</p>
+                    <h4>Asset + preprocessing metadata</h4>
+                </div>
+                <span id="transcriptSessionBadge" class="chip neutral">No session loaded</span>
+            </div>
+            <div id="transcriptSummaryGrid" class="result-grid"></div>
+        </div>
+        <div class="result-card">
+            <div class="panel-header">
+                <div>
+                    <p class="panel-label">Raw Transcript Viewer</p>
+                    <h4>Speaker blocks with timestamps and confidence</h4>
+                </div>
+                <span class="layer-badge raw">Truth Layer</span>
+            </div>
+            <div id="transcriptViewer" class="transcript-viewer"></div>
         </div>
     </article>
     <aside class="side-panel">
-        <p class="panel-label">Session Scope</p>
+        <p class="panel-label">Asset Diagnostics</p>
         <div class="placeholder-card compact">
-            <h4>Asset summary</h4>
-            <p>No transcript processing is implemented in Phase 1.</p>
+            <h4>Preprocessing metadata</h4>
+            <div id="transcriptDiagnostics" class="stack-list">
+                <div class="stack-item"><strong>SNR</strong><span>Not calculated</span></div>
+                <div class="stack-item"><strong>utt_split</strong><span>Not calibrated</span></div>
+                <div class="stack-item"><strong>Denoising</strong><span>Not evaluated</span></div>
+            </div>
+        </div>
+        <div class="placeholder-card compact">
+            <h4>Confidence Legend</h4>
+            <div class="stack-list">
+                <div class="stack-item">
+                    <span class="confidence-chip high">High</span><span>0.95 and above</span>
+                </div>
+                <div class="stack-item">
+                    <span class="confidence-chip medium">Medium</span><span>0.85 to 0.949</span>
+                </div>
+                <div class="stack-item">
+                    <span class="confidence-chip low">Low</span><span>Below 0.85</span>
+                </div>
+            </div>
         </div>
     </aside>
 </section>

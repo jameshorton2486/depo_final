@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BlockType(str, Enum):
@@ -32,6 +32,23 @@ class TranscriptAssetCreate(BaseModel):
 
 
 class TranscriptAssetRecord(TranscriptAssetCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+
+
+class SpeakerSegmentCreate(BaseModel):
+    session_id: int
+    transcript_asset_id: int | None = None
+    speaker_index: int
+    speaker_label: str | None = None
+    start_time: float
+    end_time: float
+    confidence: float | None = None
+
+
+class SpeakerSegmentRecord(SpeakerSegmentCreate):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -75,3 +92,39 @@ class WordObjectRecord(WordObjectCreate):
 
     id: int
     created_at: datetime
+
+
+class TranscriptTimelineWord(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    transcript_block_id: int
+    word_index: int
+    word_text: str
+    modified_text: str | None = None
+    start_time: float
+    end_time: float
+    confidence: float | None = None
+    is_filler: bool
+    speaker_index: int | None = None
+    speaker_label: str | None = None
+    block_type: BlockType
+
+
+class TranscriptTimelineBlock(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    session_id: int
+    speaker_segment_id: int | None = None
+    block_index: int
+    block_type: BlockType
+    speaker_index: int | None = None
+    speaker_label: str | None = None
+    raw_text: str
+    working_text: str | None = None
+    start_time: float
+    end_time: float
+    confidence: float | None = None
+    is_edited: bool
+    words: list[TranscriptTimelineWord] = Field(default_factory=list)

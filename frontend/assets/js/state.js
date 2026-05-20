@@ -29,6 +29,7 @@ const appState = {
     currentStage: Number(window.localStorage.getItem('depo-pro-stage') || 1),
     theme: window.localStorage.getItem('depo-pro-theme') || 'dark',
     currentCaseId: Number(window.localStorage.getItem('depo-pro-case-id') || 0),
+    currentSessionId: Number(window.localStorage.getItem('depo-pro-session-id') || 0),
     screenCache: {},
     health: null,
 };
@@ -37,4 +38,5 @@ function persistState() {
     window.localStorage.setItem('depo-pro-stage', String(appState.currentStage));
     window.localStorage.setItem('depo-pro-theme', appState.theme);
     window.localStorage.setItem('depo-pro-case-id', String(appState.currentCaseId || 0));
+    window.localStorage.setItem('depo-pro-session-id', String(appState.currentSessionId || 0));
 }

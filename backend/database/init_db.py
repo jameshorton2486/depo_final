@@ -100,6 +100,15 @@ REQUIRED_COLUMNS = {
         "extracted_from": "TEXT",
         "parser_confidence": "REAL",
     },
+    "transcript_assets": {
+        "source_format": "TEXT",
+        "deepgram_json_path": "TEXT",
+        "keyterms_path": "TEXT",
+        "preprocessing_metadata_path": "TEXT",
+        "snr_value": "REAL",
+        "utt_split_value": "REAL",
+        "is_primary": "INTEGER NOT NULL DEFAULT 0",
+    },
 }
 
 

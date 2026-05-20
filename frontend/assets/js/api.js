@@ -29,3 +29,25 @@ async function fetchIntake(caseId) {
     }
     return response.json();
 }
+
+async function transcribePrerecorded(payload) {
+    const response = await fetch('/api/transcribe/prerecorded', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+        throw new Error(`Transcription request failed with ${response.status}`);
+    }
+    return response.json();
+}
+
+async function fetchTranscript(sessionId) {
+    const response = await fetch(`/api/transcript/${sessionId}`);
+    if (!response.ok) {
+        throw new Error(`Transcript fetch failed with ${response.status}`);
+    }
+    return response.json();
+}
